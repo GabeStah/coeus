@@ -1,0 +1,127 @@
+image: node:alpine
+
+stages:
+  - setup
+  - build
+  - test
+  - deploy
+  - healthcheck
+  - release
+
+### Variables
+# See: https://gitlab.com/gitlab-org/gitlab-runner/-/issues/1809
+variables:
+  # All
+  REPOSITORY_URL: $CI_REPOSITORY_URL
+### End Variables
+
+### Shared
+# Perform pre-script tasks
+.all_before_script: &all_before_script
+  - chmod +x ./.deploy/all/before_script.sh
+  - . ./.deploy/all/before_script.sh
+
+# Execute job stage script.
+.all_job_stage_script: &all_job_stage_script
+  - chmod +x ./.deploy/all/${CI_JOB_STAGE}.sh
+  - . ./.deploy/all/${CI_JOB_STAGE}.sh
+
+# Run simple health check on final URL
+.all_health_check_script: &all_health_check_script
+  # Delay is unnecessary for this app
+  #when: delayed
+  #start_in: 10 seconds
+  - chmod +x ./.deploy/all/healthcheck.sh
+  - . ./.deploy/all/healthcheck.sh
+### End Shared
+
+### Testing
+.testing_template: &testing_template
+  only:
+    - branches
+    - testing
+  except:
+    - master
+  variables:
+    DEPLOY_ENDPOINT: 'sandbox.gabe.solarix.tools'
+    TARGET_DIRECTORY: 'deployer-gatsby-testing'
+  environment:
+    name: testing
+    url: 'https://deployer-gatsby-testing.gabe.solarix.tools'
+  before_script:
+    - *all_before_script
+
+testing:setup:
+  stage: setup
+  <<: *testing_template
+  script:
+    - *all_job_stage_script
+
+testing:build:
+  stage: build
+  <<: *testing_template
+  script:
+    - *all_job_stage_script
+
+testing:test:
+  stage: test
+  <<: *testing_template
+  script:
+    - *all_job_stage_script
+
+testing:deploy:
+  stage: deploy
+  <<: *testing_template
+  script:
+    - *all_job_stage_script
+
+testing:healthcheck:
+  stage: healthcheck
+  <<: *testing_template
+  script:
+    - *all_health_check_script
+### End Testing
+
+### Production
+.production_template: &production_template
+  only:
+    - master
+  variables:
+    DEPLOY_ENDPOINT: 'sandbox.gabe.solarix.tools'
+    TARGET_DIRECTORY: 'deployer-gatsby-production'
+  environment:
+    name: production
+    url: 'https://deployer-gatsby-production.gabe.solarix.tools'
+  before_script:
+    - *all_before_script
+
+production:setup:
+  stage: setup
+  <<: *production_template
+  script:
+    - *all_job_stage_script
+
+production:build:
+  stage: build
+  <<: *production_template
+  script:
+    - *all_job_stage_script
+
+production:test:
+  stage: test
+  <<: *production_template
+  script:
+    - *all_job_stage_script
+
+production:deploy:
+  stage: deploy
+  <<: *production_template
+  script:
+    - *all_job_stage_script
+
+production:healthcheck:
+  stage: healthcheck
+  <<: *production_template
+  script:
+    - *all_health_check_script
+### End Production

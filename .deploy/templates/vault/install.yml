@@ -1,0 +1,18 @@
+.vault:install:
+  variables:
+    VAULT_ADDR: 'https://vault.solarix.tools:8200'
+    VAULT_VERSION: '1.4.2'
+  before_script:
+    - apk add openssh wget
+    # Create directories
+    - mkdir -p $HOME/vault && mkdir -p $HOME/tmp
+    # Download versioned release
+    - wget --quiet --output-document=$HOME/tmp/vault.zip https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip
+    - unzip $HOME/tmp/vault.zip -d $HOME/vault
+    - rm -f $HOME/tmp/vault.zip
+    - chmod +x $HOME/vault
+    - export PATH="PATH=$PATH:$HOME/vault"
+    - echo "Commit ref name: $CI_COMMIT_REF_NAME"
+    - echo "Commit ref is protected: $CI_COMMIT_REF_PROTECTED"
+    # Confirm vault status
+    - vault status

@@ -1,0 +1,23 @@
+{
+  "db": {
+    mongo: {
+      uri: "mongodb+srv://<name>:<password>@<domain>/"
+    },
+  },
+  "port": 8000,
+  "routes": {
+    "root": "http://127.0.0.1:8000"
+  },
+  "security": {
+    "ssl": {
+      "enabled": false
+    }
+  },
+  "services": {
+    "aws": {
+      "cloudwatch": {
+        "logStreamName": "coeus/base/development/log"
+      }
+    }
+  }
+}

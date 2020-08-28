@@ -1,0 +1,97 @@
+image: node:alpine
+
+include:
+  - '/.deploy/templates/vault/install.yml'
+
+stages:
+  - setup
+  - build
+  - test
+  - deploy
+  - healthcheck
+  - release
+
+### Variables
+# See: https://gitlab.com/gitlab-org/gitlab-runner/-/issues/1809
+variables:
+  # All
+  REPOSITORY_URL: $CI_REPOSITORY_URL
+### End Variables
+
+### Testing
+.testing_template: &testing_template
+  extends: .vault:install
+  ## Applies to all branches EXCEPT master
+  only:
+    - branches
+  except:
+    - master
+  environment:
+    name: testing
+  script:
+    - echo "${CI_JOB_STAGE} complete."
+
+testing:setup:
+  stage: setup
+  <<: *testing_template
+
+testing:build:
+  stage: build
+  <<: *testing_template
+
+testing:test:
+  stage: test
+  <<: *testing_template
+
+testing:deploy:
+  stage: deploy
+  <<: *testing_template
+
+testing:healthcheck:
+  stage: healthcheck
+  <<: *testing_template
+### End Testing
+
+### Production
+.production_template: &production_template
+  extends: .vault:install
+  only:
+    - master
+  environment:
+    name: production
+  script:
+    - echo "${CI_JOB_STAGE} complete."
+
+production:setup:
+  stage: setup
+  <<: *production_template
+
+production:build:
+  stage: build
+  <<: *production_template
+
+production:test:
+  stage: test
+  <<: *production_template
+
+production:deploy:
+  stage: deploy
+  <<: *production_template
+
+production:healthcheck:
+  stage: healthcheck
+  <<: *production_template
+
+production:release:
+  stage: release
+  only:
+    - master
+  environment:
+    name: production
+  image: node:12-buster-slim
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends git-core ca-certificates openssh-client
+    - npm install -g semantic-release @semantic-release/gitlab @semantic-release/git conventional-changelog-conventionalcommits
+  script:
+    - semantic-release
+### End Production

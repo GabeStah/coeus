@@ -1,0 +1,84 @@
+{
+  "name": "coeus",
+  "private": true,
+  "description": "Titan of insight and intellect.",
+  "version": "0.0.1",
+  "author": "Gabe Wyatt <gabe@solarixdigital.com>",
+  "devDependencies": {
+    "@babel/core": "^7.8.4",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-object-rest-spread": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
+    "@babel/preset-typescript": "^7.8.3",
+    "@babel/register": "^7.8.6",
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "@rollup/plugin-alias": "^3.0.1",
+    "@rollup/plugin-babel": "^5.2.0",
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-json": "^4.0.2",
+    "@rollup/plugin-typescript": "^3.0.0",
+    "@semantic-release/git": "^9.0.0",
+    "@semantic-release/gitlab": "^6.0.4",
+    "@semantic-release/npm": "^7.0.5",
+    "@types/convict": "^5.2.1",
+    "@types/eslint": "^7.2.2",
+    "@types/mongodb": "^3.5.26",
+    "@typescript-eslint/eslint-plugin": "^3.10.1",
+    "@typescript-eslint/parser": "^3.10.1",
+    "commitizen": "^4.1.2",
+    "cross-env": "^7.0.2",
+    "cz-conventional-changelog": "^3.2.0",
+    "eslint": "^7.7.0",
+    "fastify-plugin": "^2.3.3",
+    "husky": "^4.2.5",
+    "module-alias": "^2.2.2",
+    "prettier": "^2.0.5",
+    "rimraf": "^3.0.2",
+    "rollup": "^1.31.1",
+    "rollup-plugin-terser": "^5.2.0",
+    "rollup-plugin-typescript2": "^0.26.0",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.8.2"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc && yarn run lint",
+    "commit": "git-cz",
+    "lint": "tsc --noEmit && eslint \"src/**/*.{js,ts}\" --quiet --fix",
+    "prebuild": "rimraf dist",
+    "start": "node dist/index.js",
+    "start:development": "cross-env NODE_ENV=development node dist/index.js",
+    "start:testing": "cross-env NODE_ENV=testing node dist/index.js",
+    "start:production": "cross-env NODE_ENV=production node dist/index.js",
+    "test": "echo \"All tests passed\" && exit 0",
+    "watch": "tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.solarixdigital.com/solarix/core/soldata/coeus"
+  },
+  "bugs": {
+    "url": "https://gitlab.solarixdigital.com/solarix/core/soldata/coeus/issues"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    },
+    "outputDirectory": "dist"
+  },
+  "dependencies": {
+    "@types/json5": "^0.0.30",
+    "convict": "^6.0.0",
+    "fastify": "^3.3.0",
+    "mongodb": "^3.6.0"
+  },
+  "_moduleAliases": {
+    "config": "dist/config/index.js",
+    "src": "dist"
+  }
+}
