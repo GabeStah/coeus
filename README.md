@@ -10,7 +10,7 @@ Coeus is an HTTP API providing insightful answers through data.
 2. Copy `config/example.json` to `environment.json`, replacing `environment` with the appropriate environment name (e.g. `development.json`).  See [snippets/development.json](https://gitlab.solarixdigital.com/solarix/core/soldata/coeus/snippets/20) for functional example.
 3. Update the configuration file with appropriate values.
 4. Make code changes under `src/`
-5. Rebuild with `yarn run build` or `yarn run watch`
+5. Build dist package from TypeScript with `yarn run build`
 6. Launch app with `yarn run start`
 7. Perform status check to ensure server is active:
 
@@ -18,6 +18,17 @@ Coeus is an HTTP API providing insightful answers through data.
 $ curl -X POST "localhost:8000/status"
 {"active":true,"date":"2020-08-28T22:14:56.294Z"}
 ```
+
+### Dynamic Watches
+
+1. Execute `yarn run watch` to monitor and rebuild on source changes.
+2. In a second console, execute `yarn run watch:server` to monitor build changes and restart the server.
+
+## Testing
+
+1. Create `*.test.ts` files under `src/`
+2. Execute `yarn run test` to perform a one-off test
+3. Alternatively, execute `yarn run test:watch` to watch and re-run tests on code change
 
 ## Databases
 

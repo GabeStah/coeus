@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify/fastify';
-import status from 'src/routes/status';
 import fp from 'fastify-plugin';
 import mongo from 'src/routes/mongo';
+import status from 'src/routes/status';
 
 const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   fastify.register(mongo);

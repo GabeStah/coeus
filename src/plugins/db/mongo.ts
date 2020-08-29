@@ -1,4 +1,7 @@
-import { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import { FastifyPluginAsync } from 'fastify';
+// Import override type declaration
+import fastify from '../../@types/fastify';
+import { FastifyInstance } from 'fastify/types/instance';
 import fp from 'fastify-plugin';
 import { MongoClient } from 'mongodb';
 import config from 'config';
@@ -16,7 +19,9 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
 
   // Add db client and connect
   instance.addHook('onReady', async done => {
-    instance.mongo.client = new MongoClient(config.get('db.mongo.uri'));
+    instance.mongo.client = new MongoClient(config.get('db.mongo.uri'), {
+      useUnifiedTopology: true
+    });
     await instance.mongo.client.connect();
     done();
   });
