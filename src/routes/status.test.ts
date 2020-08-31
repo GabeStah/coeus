@@ -9,4 +9,5 @@ test('requests the "/status" route', async t => {
   t.strictEqual(response.statusCode, 200, 'returns a status code of 200');
 
   t.tearDown(async () => app.close());
+  t.end();
 });

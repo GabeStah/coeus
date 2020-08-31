@@ -55,8 +55,8 @@
     "start:development": "cross-env NODE_ENV=development node dist/server.js",
     "start:testing": "cross-env NODE_ENV=testing node dist/server.js",
     "start:production": "cross-env NODE_ENV=production node dist/server.js",
-    "test": "tap --no-ts --node-arg=--require=tsconfig-paths/register --node-arg=--require=ts-node/register \"src/**/*.test.ts\"",
-    "test:watch": "tap --reporter=list --watch --no-ts --node-arg=--require=tsconfig-paths/register --node-arg=--require=ts-node/register \"src/**/*.test.ts\"",
+    "test": "tap --node-arg=--require=tsconfig-paths/register \"src/**/*.test.ts\"",
+    "test:watch": "tap --reporter=list --watch --node-arg=--require=tsconfig-paths/register \"src/**/*.test.ts\"",
     "watch": "tsc -w",
     "watch:server": "nodemon dist/server.js"
   },
