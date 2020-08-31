@@ -1,7 +1,9 @@
 import { test } from 'tap';
-import app from 'src/app';
+import { build } from 'src/app';
 
 test('requests the "/status" route', async t => {
+  const app = build();
+
   const response = await app.inject({
     method: 'GET',
     url: '/status'

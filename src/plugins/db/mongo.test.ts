@@ -1,20 +1,13 @@
 import { test } from 'tap';
-import app from 'src/app';
-import { MongoClient } from 'mongodb';
+import { build } from 'src/app';
 
-test('db:mongo', async t => {
-  await t.test('mongo.client property exists', async t => {
-    console.log(app);
-    t.hasFields(app.mongo, 'client');
-    t.type(app.mongo.client, MongoClient);
-  });
+test('plugins/db/mongo', async t => {
+  const app = build();
+  // Await plugin / decorated injection
+  await app.ready();
 
-  await t.test('POST /mongo succeeds', async t => {
-    const response = await app.inject({
-      method: 'POST',
-      url: '/mongo'
-    });
-    t.strictEqual(response.statusCode, 200, 'returns a status code of 200');
+  await t.test('mongo is connected', async t => {
+    t.true(app.mongo.client.isConnected());
   });
 
   t.tearDown(async () => await app.close());

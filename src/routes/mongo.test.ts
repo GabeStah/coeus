@@ -1,7 +1,9 @@
 import { test } from 'tap';
-import app from 'src/app';
+import { build } from 'src/app';
 
 test('mongo', async t => {
+  const app = build();
+
   await t.test('GET /mongo fails', async t => {
     const response = await app.inject({
       method: 'GET',
