@@ -20,7 +20,7 @@ variables:
 
 ### Testing
 .testing_template: &testing_template
-  extends: .vault:install
+#  extends: .vault:install
   ## Applies to all branches EXCEPT master
   only:
     - branches
@@ -54,7 +54,7 @@ testing:healthcheck:
 
 ### Production
 .production_template: &production_template
-  extends: .vault:install
+#  extends: .vault:install
   only:
     - master
   environment:
