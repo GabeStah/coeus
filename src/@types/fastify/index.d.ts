@@ -21,6 +21,7 @@ declare module 'fastify' {
     > = RawReplyDefaultExpression<RawServer>,
     Logger = FastifyLoggerInstance
   > {
+    authenticate: any;
     mongo: { client: MongoClient };
   }
 }

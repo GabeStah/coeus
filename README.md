@@ -98,6 +98,10 @@ Each **document** _must_:
 - resource-type
 - resource-id
 
+## Authentication
+
+- Limitations: https://docs.atlas.mongodb.com/reference/unsupported-commands/ (requires M10+ Atlas cluster)
+
 ## Roles and Privileges
 
 **NOTE**: Atlas disallows direct role management via Database User authentication. Therefore, custom role creations _must_ be performed via the Atlas GUI or API.

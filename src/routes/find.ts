@@ -1,10 +1,10 @@
-import { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import fastify, { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 import {
   MongoService,
   MongoServiceFindParams,
   MongoServiceParams
-} from 'src/services/mongo-service';
+} from 'src/services/MongoService';
 import config from 'config';
 
 const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
@@ -21,6 +21,7 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
         options: request.body.options
       });
     },
+    preValidation: [instance.authenticate],
     method: 'POST',
     schema: {
       body: {
