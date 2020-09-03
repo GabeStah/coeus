@@ -8,29 +8,32 @@ import {
 import fastify from '../@types/fastify';
 import fp from 'fastify-plugin';
 import fastifyJwt from 'fastify-jwt';
+import config from 'config';
 
 const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
-  // JSON Web Token
+  if (!config.get('security.jwt.secret')) {
+    throw Error("'security.jwt.secret' MUST be defined.");
+  }
+
+  // register JWT
   instance.register(fastifyJwt, {
-    secret: 'mysecret'
+    secret: config.get('security.jwt.secret'),
+    sign: {
+      issuer: config.get('security.jwt.sign.issuer')
+    },
+    verify: {
+      issuer: config.get('security.jwt.verify.issuer')
+    }
   });
 
-  // Add MongoDB property to instance
-  instance.decorate('authenticate', async function(
+  // Add JWT verification method to instance
+  instance.decorate('verifyJwt', async function(
     request: FastifyRequest,
     reply: FastifyReply
   ) {
     try {
       const payload = await request.jwtVerify();
-      await instance.mongo.client
-        .db()
-        .admin()
-        .command({
-          updateUser: 'soldatatester',
-          customData: {
-            payload: payload
-          }
-        });
+      return payload;
     } catch (err) {
       reply.send(err);
     }
@@ -39,5 +42,5 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
 
 export default fp(plugin, {
   fastify: '3.3.x',
-  name: 'plugins/hooks/preValidation'
+  name: 'plugins/authentication'
 });

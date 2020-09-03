@@ -102,6 +102,162 @@ Each **document** _must_:
 
 - Limitations: https://docs.atlas.mongodb.com/reference/unsupported-commands/ (requires M10+ Atlas cluster)
 
+### User
+
+```json
+{
+  "_id": "12345",
+  "srn": "srn:coeus:acme::user/johndoe",
+  "email": "john@acme.com",
+  "org": "acme",
+  "username": "johndoe",
+  "password": "password",
+  "verified": true,
+  "active": true,
+  "privileges": [
+    {
+      "resource": {
+        "db": "acme",
+        "collection": "srn:coeus:acme::collection"
+      },
+      "actions": ["find", "insert", "update"]
+    }
+  ]
+}
+```
+
+### Routes
+
+#### `/auth/register`
+
+**Purpose**: Register a user.
+
+`POST` request payload example:
+
+```json
+{
+  "email": "john@acme.com",
+  "org": "acme",
+  "username": "johnsmith",
+  "password": "password",
+  "privileges": [
+    {
+      "resource": {
+        "db": "acme",
+        "collection": "srn:coeus:acme::collection"
+      },
+      "actions": "find"
+    },
+    {
+      "resource": {
+        "db": "solarix",
+        "collection": "srn:coeus:solarix::collection"
+      },
+      "actions": "find"
+    }
+  ]
+}
+```
+
+Response payload example:
+
+```json
+{
+  "message": "User successfully created.",
+  "data": {
+    "email": "john@acme.com",
+    "org": "acme",
+    "srn": "srn:coeus:acme::user/johnsamith",
+    "username": "johnsamith",
+    "privileges": [
+      {
+        "resource": {
+          "db": "acme",
+          "collection": "srn:coeus:acme::collection"
+        },
+        "actions": "find"
+      },
+      {
+        "resource": {
+          "db": "solarix",
+          "collection": "srn:coeus:solarix::collection"
+        },
+        "actions": "find"
+      }
+    ]
+  }
+}
+```
+
+Each **User** _must_ contain:
+
+- `username`: To allow for multiple users per email, `username` is the **primary unique value** for differentiating users.
+- `email`
+- `org`: Organization name, per the [Solarix Resource Name (SRN)](https://docs.solarix.tools/solarix-resource-names/) conventions.
+- `password`
+
+Each **User** _may_ contain:
+
+- `privileges`: An array of privilege objects indicating the `resource` with `db` and `collection` name, along with the allowed `actions`.
+  - `resource`: _Must_ contain a `db`. _May_ contain a `collection`. If no `collection` specified then all collections are assumed.
+  - `actions`: _Must_ contain an array of strings or a single string from: `delete`, `find`, `insert`, `update`
+
+#### `/auth/login`
+
+**Purpose**: Login via username and password to retrieve a valid JWT.
+
+`POST` request payload example:
+
+```json
+{
+  "username": "johnsmith",
+  "password": "password"
+}
+```
+
+Response payload example:
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3RpdmUiOmZhbHNlLCJlbWFpbCI6ImpvaG5AYWNtZS5jb20iLCJvcmciOiJhY21lIiwicHJpdmlsZWdlcyI6W3sicmVzb3VyY2UiOnsiZGIiOiJhY21lIiwiY29sbGVjdGlvbiI6InNybjpjb2V1czphY21lOjpjb2xsZWN0aW9uIn0sImFjdGlvbnMiOiJmaW5kIn0seyJyZXNvdXJjZSI6eyJkYiI6InNvbGFyaXgiLCJjb2xsZWN0aW9uIjoic3JuOmNvZXVzOnNvbGFyaXg6OmNvbGxlY3Rpb24ifSwiYWN0aW9ucyI6ImZpbmQifV0sInNybiI6InNybjpjb2V1czphY21lOjp1c2VyL2pvaG5zbWl0aCIsInVzZXJuYW1lIjoiam9obnNtaXRoIiwiaWF0IjoxNTk5MDk0ODk5LCJpc3MiOiJjb2V1cy5zb2xhcml4LnRvb2xzIn0.73dnMmj1g2_gVS5rrlIcUT2MZgp7JjWZo9vbQyDas2c"
+}
+```
+
+An `/auth/login` request payload *must* contain:
+
+- `username`
+- `password`
+
+The returned `token` is issued by `coeus.solarix.tools`.  The decoded payload contains valid user data from the time of authentication, e.g.:
+
+```json
+{
+  "active": false,
+  "email": "john@acme.com",
+  "org": "acme",
+  "privileges": [
+    {
+      "resource": {
+        "db": "acme",
+        "collection": "srn:coeus:acme::collection"
+      },
+      "actions": "find"
+    },
+    {
+      "resource": {
+        "db": "solarix",
+        "collection": "srn:coeus:solarix::collection"
+      },
+      "actions": "find"
+    }
+  ],
+  "srn": "srn:coeus:acme::user/johnsmith",
+  "username": "johnsmith",
+  "iat": 1599095260,
+  "iss": "coeus.solarix.tools"
+}
+```
+
 ## Roles and Privileges
 
 **NOTE**: Atlas disallows direct role management via Database User authentication. Therefore, custom role creations _must_ be performed via the Atlas GUI or API.
@@ -265,13 +421,13 @@ Each **document** _must_:
 
 By default, Coeus limits the number of documents returned by a single request:
 
-- `20` - Default maximum number of documents retrieved if no `limit` specified.  Configurable via the `config.db.thresholds.limit.base` path.
-- `1` - Minimum number of documents that can be retrieved.  Configurable via the `config.db.thresholds.limit.minimum` path.
-- `100` - Maximum number of documents that can be retrieved.  Configurable via the `config.db.thresholds.limit.minimum` path.
+- `20` - Default maximum number of documents retrieved if no `limit` specified. Configurable via the `config.db.thresholds.limit.base` path.
+- `1` - Minimum number of documents that can be retrieved. Configurable via the `config.db.thresholds.limit.minimum` path.
+- `100` - Maximum number of documents that can be retrieved. Configurable via the `config.db.thresholds.limit.minimum` path.
 
 ### Timeout
 
-By default, Coeus restricts all requests to under `5000` milliseconds.  This value is configurable via the `config.db.thresholds.timeout.maximum` path.
+By default, Coeus restricts all requests to under `5000` milliseconds. This value is configurable via the `config.db.thresholds.timeout.maximum` path.
 
 ### Pagination
 
@@ -283,12 +439,12 @@ TODO
 
 To find one or more documents send a `POST` request to the `/find` endpoint.
 
-The body *must* contain:
+The body _must_ contain:
 
 - `db`: The database name to query.
 - `collection`: The collection name within the database to query.
 
-The body *may* contain:
+The body _may_ contain:
 
 - `query`: MongoDB-compatible object defining query parameters.
 - `limit`: Maximum number of documents to return.
@@ -326,23 +482,23 @@ const schema = {
       }
     }
   }
-}
+};
 ```
 
 #### Examples
 
-**Example**: Perform a full text search for the term `Superman` within the `sample_mflix.movies` collection.  Limit to a maximum of `5` documents:
+**Example**: Perform a full text search for the term `Superman` within the `sample_mflix.movies` collection. Limit to a maximum of `5` documents:
 
 ```json
 {
-    "collection": "movies",
-    "db": "sample_mflix",
-    "query": {
-        "$text": {
-            "$search": "Superman"
-        }
-    },
-    "limit": 5
+  "collection": "movies",
+  "db": "sample_mflix",
+  "query": {
+    "$text": {
+      "$search": "Superman"
+    }
+  },
+  "limit": 5
 }
 ```
 

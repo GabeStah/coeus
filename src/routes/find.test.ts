@@ -1,13 +1,55 @@
 import { test } from 'tap';
 import { build } from 'src/app';
+import { User } from 'src/models/User';
 
 test('find', async t => {
   const app = build();
 
+  t.beforeEach(async (done, t) => {
+    t.context.user = new User({
+      email: 'john@acme.com',
+      org: 'acme',
+      username: 'johnsmith',
+      password: 'password',
+      privileges: [
+        {
+          resource: {
+            db: 'acme',
+            collection: 'srn:coeus:acme::collection'
+          },
+          actions: 'find'
+        },
+        {
+          resource: {
+            db: 'solarix',
+            collection: 'srn:coeus:solarix::collection'
+          },
+          actions: 'find'
+        }
+      ]
+    });
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/auth/login',
+      payload: {
+        password: t.context.user.password,
+        username: t.context.user.username
+      }
+    });
+
+    t.context.token = response.json().token;
+
+    done();
+  });
+
   await t.test('GET /find', async t => {
     const response = await app.inject({
       method: 'GET',
-      url: '/find'
+      url: '/find',
+      headers: {
+        Authorization: `Bearer ${t.context.token}`
+      }
     });
     t.strictEqual(response.statusCode, 404, 'returns a status code of 404');
   });
@@ -15,7 +57,10 @@ test('find', async t => {
   await t.test('POST /find without body fails', async t => {
     const response = await app.inject({
       method: 'POST',
-      url: '/find'
+      url: '/find',
+      headers: {
+        Authorization: `Bearer ${t.context.token}`
+      }
     });
     t.strictEqual(response.statusCode, 400, 'returns a status code of 400');
   });
@@ -24,6 +69,9 @@ test('find', async t => {
     const response = await app.inject({
       method: 'POST',
       url: '/find',
+      headers: {
+        Authorization: `Bearer ${t.context.token}`
+      },
       payload: {}
     });
     t.strictEqual(response.statusCode, 400);
@@ -37,6 +85,9 @@ test('find', async t => {
     const response = await app.inject({
       method: 'POST',
       url: '/find',
+      headers: {
+        Authorization: `Bearer ${t.context.token}`
+      },
       payload: {
         collection: ''
       }
@@ -52,6 +103,9 @@ test('find', async t => {
     const response = await app.inject({
       method: 'POST',
       url: '/find',
+      headers: {
+        Authorization: `Bearer ${t.context.token}`
+      },
       payload: {
         collection: '',
         db: ''
@@ -65,6 +119,9 @@ test('find', async t => {
     const response = await app.inject({
       method: 'POST',
       url: '/find',
+      headers: {
+        Authorization: `Bearer ${t.context.token}`
+      },
       payload: {
         collection: 'foo',
         db: 'bar'
@@ -78,6 +135,9 @@ test('find', async t => {
     const response = await app.inject({
       method: 'POST',
       url: '/find',
+      headers: {
+        Authorization: `Bearer ${t.context.token}`
+      },
       payload: {
         collection: 'foo',
         db: 'bar',
@@ -92,6 +152,9 @@ test('find', async t => {
     const response = await app.inject({
       method: 'POST',
       url: '/find',
+      headers: {
+        Authorization: `Bearer ${t.context.token}`
+      },
       payload: {
         collection: 'movies',
         db: 'sample_mflix',
@@ -107,6 +170,9 @@ test('find', async t => {
     const response = await app.inject({
       method: 'POST',
       url: '/find',
+      headers: {
+        Authorization: `Bearer ${t.context.token}`
+      },
       payload: {
         collection: 'movies',
         db: 'sample_mflix',

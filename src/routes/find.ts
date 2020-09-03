@@ -12,6 +12,10 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
     Body: MongoServiceParams & MongoServiceFindParams;
   }>({
     handler: async (request, reply) => {
+      const user = request.user;
+
+      // TODO: Authorize user payload privileges against db, collection, and action
+
       return new MongoService(instance, {
         db: request.body.db,
         collection: request.body.collection
@@ -21,7 +25,7 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
         options: request.body.options
       });
     },
-    preValidation: [instance.authenticate],
+    preValidation: [instance.verifyJwt],
     method: 'POST',
     schema: {
       body: {

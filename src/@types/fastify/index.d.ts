@@ -21,7 +21,7 @@ declare module 'fastify' {
     > = RawReplyDefaultExpression<RawServer>,
     Logger = FastifyLoggerInstance
   > {
-    authenticate: any;
+    verifyJwt: any;
     mongo: { client: MongoClient };
   }
 }
