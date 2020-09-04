@@ -319,7 +319,7 @@ Each **User** _may_ contain:
 
 - `policy`: An object containing `PolicyStatements` defining permissions. See [Policy](#policy) for details.
 
-#### `/login`
+#### `/user/login`
 
 **Purpose**: Login via username and password to retrieve a valid JWT.
 
@@ -457,12 +457,6 @@ By default, Coeus limits the number of documents returned by a single request:
 
 By default, Coeus restricts all requests to under `5000` milliseconds. This value is configurable via the `config.db.thresholds.timeout.maximum` path.
 
-### Pagination
-
-TODO
-
-- https://docs.mongodb.com/manual/indexes/#indexes
-
 ### Find
 
 To find one or more documents send a `POST` request to the `/data/find` endpoint.
@@ -540,6 +534,10 @@ TODO
 
 ## TODO
 
+### Pagination
+
+- see: https://docs.mongodb.com/manual/indexes/#indexes
+
 ### Request Option: idempotence_id
 
 - Mutable action requests (i.e. `delete`, `insert`, `update`) should have an `idempotence_id` to ensure repeated requests are not processed multiple times.
@@ -552,10 +550,10 @@ TODO
 
 - Email address to send results to. Requires background worker system.
 
-### Privilege Option: ip address
+### PolicyStatement Property: ip
 
 - Restrict requests from ip address/range
 
-### Privilege Option: hostname
+### PolicyStatement Property: hostname
 
 - Restrict requests from hostname
