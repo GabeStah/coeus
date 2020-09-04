@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 import { UserService, UserServiceLoginParams } from 'src/services/UserService';
+import { Utility } from 'src/helpers/Utility';
 
 const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.route<{
@@ -27,11 +28,11 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
         }
       }
     },
-    url: '/auth/login'
+    url: Utility.route(['user.prefix', 'user.login'])
   });
 };
 
 export default fp(plugin, {
   fastify: '3.3.x',
-  name: 'routes/auth/login'
+  name: `routes${Utility.route(['user.prefix', 'user.login'])}`
 });

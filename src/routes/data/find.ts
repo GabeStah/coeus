@@ -1,24 +1,22 @@
-import fastify, { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 import {
-  MongoService,
-  MongoServiceFindParams,
-  MongoServiceParams
-} from 'src/services/MongoService';
+  DataService,
+  DataServiceFindParams,
+  DataServiceParams
+} from 'src/services/DataService';
 import config from 'config';
+import { Utility } from 'src/helpers/Utility';
 
 const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.route<{
-    Body: MongoServiceParams & MongoServiceFindParams;
+    Body: DataServiceParams & DataServiceFindParams;
   }>({
     handler: async (request, reply) => {
-      const user = request.user;
-
-      // TODO: Authorize user payload privileges against db, collection, and action
-
-      return new MongoService(instance, {
+      return new DataService(instance, {
         db: request.body.db,
-        collection: request.body.collection
+        collection: request.body.collection,
+        payload: request.payload
       }).find({
         limit: request.body.limit,
         query: request.body.query,
@@ -55,11 +53,11 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
         }
       }
     },
-    url: '/find'
+    url: Utility.route(['data.prefix', 'data.find'])
   });
 };
 
 export default fp(plugin, {
   fastify: '3.3.x',
-  name: 'route:mongo'
+  name: `routes${Utility.route(['data.prefix', 'data.find'])}`
 });

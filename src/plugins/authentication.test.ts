@@ -1,5 +1,6 @@
 import { test } from 'tap';
 import { build } from 'src/app';
+import { Utility } from 'src/helpers/Utility';
 
 test('plugins/authentication', async t => {
   const app = build();
@@ -7,7 +8,7 @@ test('plugins/authentication', async t => {
   await t.test('no auth provided', async t => {
     const response = await app.inject({
       method: 'POST',
-      url: '/find'
+      url: Utility.route(['data.prefix', 'data.find'])
     });
     t.strictEqual(response.statusCode, 401);
     t.equivalent(response.json(), {

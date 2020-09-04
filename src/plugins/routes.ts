@@ -1,8 +1,8 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify/fastify';
 import fp from 'fastify-plugin';
-import find from 'src/routes/find';
-import login from 'src/routes/auth/login';
-import register from 'src/routes/auth/register';
+import find from 'src/routes/data/find';
+import login from 'src/routes/user/login';
+import register from 'src/routes/user/register';
 import status from 'src/routes/status';
 
 const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {

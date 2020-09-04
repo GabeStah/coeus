@@ -9,6 +9,7 @@ import fastify from '../@types/fastify';
 import fp from 'fastify-plugin';
 import fastifyJwt from 'fastify-jwt';
 import config from 'config';
+import { IUser, User } from 'src/models/User';
 
 const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   if (!config.get('security.jwt.secret')) {
@@ -31,12 +32,9 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
     request: FastifyRequest,
     reply: FastifyReply
   ) {
-    try {
-      const payload = await request.jwtVerify();
-      return payload;
-    } catch (err) {
-      reply.send(err);
-    }
+    request.payload = <Partial<User>>await request.jwtVerify();
+
+    return;
   });
 };
 

@@ -98,11 +98,17 @@ Each **document** _must_:
 - resource-type
 - resource-id
 
+## Protected Database / Collections
+
+The `coeus` database is protected and used for administration purposes.
+
+- `coeus.users` - Stores all User documents
+
 ## Authentication
 
 - Limitations: https://docs.atlas.mongodb.com/reference/unsupported-commands/ (requires M10+ Atlas cluster)
 
-### User
+## User
 
 ```json
 {
@@ -114,13 +120,111 @@ Each **document** _must_:
   "password": "password",
   "verified": true,
   "active": true,
-  "privileges": [
-    {
-      "resource": {
-        "db": "acme",
-        "collection": "srn:coeus:acme::collection"
+  "policy": {
+    "version": "1.1.0",
+    "statement": [
+      {
+        "action": "data:find",
+        "resource": "acme.*"
       },
-      "actions": ["find", "insert", "update"]
+      {
+        "action": ["data:insert", "data:update"],
+        "allow": true,
+        "resource": "acme.srn:coeus:acme::collection"
+      },
+      {
+        "action": ["data:delete"],
+        "allow": false,
+        "resource": "acme.*"
+      }
+    ]
+  }
+}
+```
+
+### Policy
+
+The `policy` property of a **User** document defines permissions for that user. A policy consists of one or more `statement` objects.
+
+A **policy** _may_ contain:
+
+- a `version` semver value that indicates what API version this policy was generated with. This value is automatically generated upon creation.
+
+A **policy statement** _must_ contain:
+
+- an `action` property.
+- a `resource` property.
+
+A **policy statement** _may_ contain:
+
+- an `allow` property.
+
+#### Policy Statement: action
+
+The `action` property defines the action(s) allowed or denied by the **statement**. An `action` string _must_ be formatted as `<service>:<method>`. For example, an `action` of `data:find` indicates the `find` method for the `data` service.
+
+An asterisk (`*`) may be substituted for the `<method>` as a wildcard indicator for **ALL** methods within the given `<service>`. For example, `data:*` applies actions to all methods of the `data` service.
+
+#### Policy Statement: resource
+
+The `resource` property defines the resource(s) allowed or denied by the **statement**. A `resource` string _must_ be formatted as `<db>.<collection>`. For example, a `resource` of `acme.srn:coeus:acme::collection` indicates the `srn:coeus:acme::collection` collection of the `acme` database.
+
+An asterisk (`*`) may be substituted for the `<collection>` as a wildcard indicator for **ALL** collections within the given `<db>`. For example, `acme:*` applies to all collections within the `acme` database.
+
+An asterisk (`*`) may also be substituted for the entire `resource` string as a wildcard indicator for **ALL** database and collection combinations. **This provides full admin access, so use with caution.**
+
+#### Policy Statement: allow
+
+The `allow` property determines if the **statement** is allowing or denying permission indicated by the related `action` and `resource`.
+
+By default, a **statement** without an `allow` property is assumed to be `true`, allowing permission to the related `resource`. Otherwise, the default policy across the app is to deny permission unless explicitly allowed.
+
+#### Example Policies
+
+The following policy is intended for an Acme `org` User with moderate permissions. The policy:
+
+- allows `data:find` access across the `acme` database
+- allows `data:insert` and `data:update` access to the `srn:coeus:acme::collection` collection in the `acme` database.
+- denies `data:delete` access across the `acme` database
+
+```json
+{
+  "version": "1.1.0",
+  "statement": [
+    {
+      "action": "data:find",
+      "resource": "acme.*"
+    },
+    {
+      "action": ["data:insert", "data:update"],
+      "allow": true,
+      "resource": "acme.srn:coeus:acme::collection"
+    },
+    {
+      "action": ["data:delete"],
+      "allow": false,
+      "resource": "acme.*"
+    }
+  ]
+}
+```
+
+The following policy is intended for a Solarix `org` User with full administrative privileges. The policy:
+
+- allows access to all `admin` service methods across **ALL** resources
+- allows access to all `data` service methods across **ALL** resources
+
+```json
+{
+  "version": "1.1.0",
+  "statement": [
+    {
+      "action": "admin:*",
+      "resource": "*"
+    },
+    {
+      "action": "data:*",
+      "resource": "*"
     }
   ]
 }
@@ -128,7 +232,16 @@ Each **document** _must_:
 
 ### Routes
 
-#### `/auth/register`
+- /admin/authenticate - Authenticate as a User without password and receive JWT
+- /admin/register - Register a User, automatically verify and activate, and receive JWT
+- /data/delete - Delete documents
+- /data/find - Find documents
+- /data/insert - Insert documents
+- /data/update - Update documents
+- /user/login - Login via `username` / `password` and receive JWT
+- /user/register - Register a User
+
+#### `/user/register`
 
 **Purpose**: Register a user.
 
@@ -140,22 +253,25 @@ Each **document** _must_:
   "org": "acme",
   "username": "johnsmith",
   "password": "password",
-  "privileges": [
-    {
-      "resource": {
-        "db": "acme",
-        "collection": "srn:coeus:acme::collection"
+  "policy": {
+    "version": "1.1.0",
+    "statement": [
+      {
+        "action": "data:find",
+        "resource": "acme.*"
       },
-      "actions": "find"
-    },
-    {
-      "resource": {
-        "db": "solarix",
-        "collection": "srn:coeus:solarix::collection"
+      {
+        "action": ["data:insert", "data:update"],
+        "allow": true,
+        "resource": "acme.srn:coeus:acme::collection"
       },
-      "actions": "find"
-    }
-  ]
+      {
+        "action": ["data:delete"],
+        "allow": false,
+        "resource": "acme.*"
+      }
+    ]
+  }
 }
 ```
 
@@ -169,22 +285,25 @@ Response payload example:
     "org": "acme",
     "srn": "srn:coeus:acme::user/johnsamith",
     "username": "johnsamith",
-    "privileges": [
-      {
-        "resource": {
-          "db": "acme",
-          "collection": "srn:coeus:acme::collection"
+    "policy": {
+      "version": "1.1.0",
+      "statement": [
+        {
+          "action": "data:find",
+          "resource": "acme.*"
         },
-        "actions": "find"
-      },
-      {
-        "resource": {
-          "db": "solarix",
-          "collection": "srn:coeus:solarix::collection"
+        {
+          "action": ["data:insert", "data:update"],
+          "allow": true,
+          "resource": "acme.srn:coeus:acme::collection"
         },
-        "actions": "find"
-      }
-    ]
+        {
+          "action": ["data:delete"],
+          "allow": false,
+          "resource": "acme.*"
+        }
+      ]
+    }
   }
 }
 ```
@@ -198,11 +317,9 @@ Each **User** _must_ contain:
 
 Each **User** _may_ contain:
 
-- `privileges`: An array of privilege objects indicating the `resource` with `db` and `collection` name, along with the allowed `actions`.
-  - `resource`: _Must_ contain a `db`. _May_ contain a `collection`. If no `collection` specified then all collections are assumed.
-  - `actions`: _Must_ contain an array of strings or a single string from: `delete`, `find`, `insert`, `update`
+- `policy`: An object containing `PolicyStatements` defining permissions. See [Policy](#policy) for details.
 
-#### `/auth/login`
+#### `/login`
 
 **Purpose**: Login via username and password to retrieve a valid JWT.
 
@@ -223,132 +340,43 @@ Response payload example:
 }
 ```
 
-An `/auth/login` request payload *must* contain:
+An `/user/login` request payload _must_ contain:
 
 - `username`
 - `password`
 
-The returned `token` is issued by `coeus.solarix.tools`.  The decoded payload contains valid user data from the time of authentication, e.g.:
+The returned `token` is issued by `coeus.solarix.tools`. The decoded payload contains valid user data from the time of authentication, e.g.:
 
 ```json
 {
   "active": false,
   "email": "john@acme.com",
   "org": "acme",
-  "privileges": [
-    {
-      "resource": {
-        "db": "acme",
-        "collection": "srn:coeus:acme::collection"
+  "policy": {
+    "version": "1.1.0",
+    "statement": [
+      {
+        "action": "data:find",
+        "resource": "acme.*"
       },
-      "actions": "find"
-    },
-    {
-      "resource": {
-        "db": "solarix",
-        "collection": "srn:coeus:solarix::collection"
+      {
+        "action": ["data:insert", "data:update"],
+        "allow": true,
+        "resource": "acme.srn:coeus:acme::collection"
       },
-      "actions": "find"
-    }
-  ],
+      {
+        "action": ["data:delete"],
+        "allow": false,
+        "resource": "acme.*"
+      }
+    ]
+  },
   "srn": "srn:coeus:acme::user/johnsmith",
   "username": "johnsmith",
   "iat": 1599095260,
   "iss": "coeus.solarix.tools"
 }
 ```
-
-## Roles and Privileges
-
-**NOTE**: Atlas disallows direct role management via Database User authentication. Therefore, custom role creations _must_ be performed via the Atlas GUI or API.
-
-**Example: Acme Admin Role**
-
-```json
-{
-  "_id": "acme.admin",
-  "role": "srn:coeus:acme::role/admin",
-  "db": "acme",
-  "privileges": [
-    {
-      "resource": {
-        "db": "acme",
-        // All collections
-        "collection": ""
-      },
-      "actions": ["find", "createCollection", "dbStats", "collStats"]
-    },
-    {
-      "resource": { "db": "acme", "collection": "srn:coeus:acme::collection" },
-      "actions": ["insert", "update", "remove", "compact"]
-    },
-    {
-      "resource": {
-        "db": "acme",
-        "collection": "srn:coeus:acme:tracker:api:development::collection"
-      },
-      "actions": ["find"]
-    }
-  ],
-  "roles": []
-}
-```
-
-```json
-{
-  "db": "acme",
-  "role": "srn:coeus:acme::role/admin",
-  "privileges": [
-    {
-      "resource": {
-        "db": "acme",
-        "collection": ""
-      },
-      "actions": ["find", "createCollection", "dbStats", "collStats"]
-    },
-    {
-      "resource": { "db": "acme", "collection": "srn:coeus:acme::collection" },
-      "actions": ["insert", "update", "remove", "compact"]
-    },
-    {
-      "resource": {
-        "db": "acme",
-        "collection": "srn:coeus:acme:tracker:api:development::collection"
-      },
-      "actions": ["find"]
-    }
-  ]
-}
-```
-
-**Example: Acme Public Role**
-
-```json
-{
-  "_id": "acme.public",
-  "role": "srn:mongo::role/acme-public",
-  "db": "acme",
-  "privileges": [
-    {
-      "resource": {
-        "db": "acme",
-        "collection": "srn::acme"
-      },
-      "actions": ["find"]
-    }
-  ],
-  "roles": []
-}
-```
-
-- [user defined roles](https://docs.mongodb.com/manual/core/security-user-defined-roles/)
-- [defining roles](https://docs.mongodb.com/manual/reference/method/db.createRole/#db.createRole)
-
-## API Routing
-
-- `token`: JWT bearer token for auth. Associated in backend with one or more `Roles`
-- `db`: database name
-- `collection`: collection name
 
 ## Story Implementation Examples
 
@@ -437,7 +465,7 @@ TODO
 
 ### Find
 
-To find one or more documents send a `POST` request to the `/find` endpoint.
+To find one or more documents send a `POST` request to the `/data/find` endpoint.
 
 The body _must_ contain:
 
@@ -452,7 +480,7 @@ The body _may_ contain:
 
 #### Schema
 
-Below is the JSON Schema for the `/find` endpoint.
+Below is the JSON Schema for the `/data/find` endpoint.
 
 ```js
 const schema = {
@@ -509,3 +537,25 @@ TODO
 ### Update
 
 TODO
+
+## TODO
+
+### Request Option: idempotence_id
+
+- Mutable action requests (i.e. `delete`, `insert`, `update`) should have an `idempotence_id` to ensure repeated requests are not processed multiple times.
+
+### Request Option: format
+
+- json, csv, etc: Allow output format of results
+
+### Request Option: email
+
+- Email address to send results to. Requires background worker system.
+
+### Privilege Option: ip address
+
+- Restrict requests from ip address/range
+
+### Privilege Option: hostname
+
+- Restrict requests from hostname

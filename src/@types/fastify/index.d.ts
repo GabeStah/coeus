@@ -1,15 +1,15 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient } from "mongodb";
 import {
   RawReplyDefaultExpression,
   RawRequestDefaultExpression,
   RawServerBase,
   RawServerDefault
-} from 'fastify/types/utils';
-import { FastifyLoggerInstance } from 'fastify/types/logger';
+} from "fastify/types/utils";
+import { FastifyLoggerInstance } from "fastify/types/logger";
 
 declare module 'fastify' {
   /**
-   * Override with mongo decorated property
+   * Override with app-decorated properties
    */
   export interface FastifyInstance<
     RawServer extends RawServerBase = RawServerDefault,
@@ -21,7 +21,11 @@ declare module 'fastify' {
     > = RawReplyDefaultExpression<RawServer>,
     Logger = FastifyLoggerInstance
   > {
-    verifyJwt: any;
     mongo: { client: MongoClient };
+    verifyJwt: any;
+  }
+
+  interface FastifyRequest {
+    payload?: any;
   }
 }

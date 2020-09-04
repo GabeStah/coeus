@@ -1,32 +1,38 @@
 import { FastifyInstance } from 'fastify';
 import config from 'config';
+import {
+  AuthorizationPayloadType,
+  AuthorizationService
+} from 'src/services/AuthorizationService';
 
-export interface MongoServiceParams {
+export interface DataServiceParams {
   db: string;
   collection: string;
+  payload?: AuthorizationPayloadType;
 }
 
-export interface MongoServiceFindParams {
+export interface DataServiceFindParams {
   limit?: number;
   query?: object;
   options?: any;
 }
 
 /**
- * Database request helper.
+ * Data service class.
  */
-export class MongoService {
+export class DataService extends AuthorizationService {
   private instance: FastifyInstance;
   private db: string;
   private collection: string;
 
   constructor(
     instance: FastifyInstance,
-    { db, collection }: MongoServiceParams
+    { db, collection, payload }: DataServiceParams
   ) {
-    this.instance = instance;
+    super({ payload, service: 'data' });
     this.db = db;
     this.collection = collection;
+    this.instance = instance;
   }
 
   /**
@@ -40,7 +46,9 @@ export class MongoService {
     limit = config.get('db.thresholds.limit.base'),
     query = {},
     options = null
-  }: MongoServiceFindParams) {
+  }: DataServiceFindParams) {
+    this.authorize({ method: 'find' });
+
     const result = await this.instance.mongo.client
       .db(this.db)
       .collection(this.collection)

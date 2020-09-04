@@ -1,11 +1,11 @@
-import { IPrivilege } from 'src/services/UserService';
+import { Policy } from 'src/models/Policy';
 
 export interface IUser {
   active?: boolean;
   email: string;
   org: string;
   password: string;
-  privileges?: Array<IPrivilege>;
+  policy: Policy;
   username: string;
   srn?: string;
   verified?: boolean;
@@ -16,17 +16,17 @@ export class User implements IUser {
   public email: string;
   public org: string;
   public password: string;
-  public privileges: Array<IPrivilege>;
+  public policy: Policy;
   public srn: string;
   public username: string;
   public verified: boolean = false;
 
-  constructor(args: IUser) {
+  constructor(args: Partial<IUser>) {
     this.active = args.active;
     this.email = args.email;
     this.org = args.org;
     this.password = args.password;
-    this.privileges = args.privileges;
+    this.policy = args.policy;
     this.srn = args.srn;
     this.username = args.username;
     this.verified = args.verified;
@@ -40,7 +40,7 @@ export class User implements IUser {
       active: this.active,
       email: this.email,
       org: this.org,
-      privileges: this.privileges,
+      policy: this.policy,
       srn: this.srn,
       username: this.username
     };
