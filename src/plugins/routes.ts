@@ -1,14 +1,18 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify/fastify';
 import fp from 'fastify-plugin';
-import find from 'src/routes/data/find';
-import login from 'src/routes/user/login';
-import register from 'src/routes/user/register';
+import dataDelete from 'src/routes/data/delete';
+import dataFind from 'src/routes/data/find';
+import dataInsert from 'src/routes/data/insert';
+import userLogin from 'src/routes/user/login';
+import userRegister from 'src/routes/user/register';
 import status from 'src/routes/status';
 
 const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
-  fastify.register(find);
-  fastify.register(register);
-  fastify.register(login);
+  fastify.register(dataDelete);
+  fastify.register(dataFind);
+  fastify.register(dataInsert);
+  fastify.register(userLogin);
+  fastify.register(userRegister);
   fastify.register(status);
 };
 

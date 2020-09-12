@@ -3,8 +3,10 @@ import { build } from 'src/app';
 import { User } from 'src/models/User';
 import { Utility } from 'src/helpers/Utility';
 import { UserService } from 'src/services/UserService';
+import config from 'config';
+import { UserTestHelper } from 'src/helpers/Test';
 
-test('find', async t => {
+test('routes/data/find', async t => {
   const app = build();
   // Await plugin / decorated injection
   await app.ready();
@@ -31,6 +33,10 @@ test('find', async t => {
           action: ['data:delete'],
           allow: false,
           resource: 'acme.*'
+        },
+        {
+          action: 'data:find',
+          resource: ['sample_mflix.movies']
         }
       ]
     }
@@ -39,25 +45,10 @@ test('find', async t => {
   const route = Utility.route(['data.prefix', 'data.find']);
 
   t.beforeEach(async (done, t) => {
-    // Exists
-    let user = await new UserService(app).exists({
-      username: userInstance.username
-    });
-
-    if (!user) {
-      await new UserService(app).create(userInstance);
-    }
-
-    const loginResponse = await app.inject({
-      method: 'POST',
-      url: Utility.route(['user.prefix', 'user.login']),
-      payload: {
-        password: userInstance.password,
-        username: userInstance.username
-      }
-    });
-
-    t.context.token = loginResponse.json().token;
+    // Ensure created
+    await UserTestHelper.create({ app, user: userInstance });
+    // Login and get token
+    t.context.token = await UserTestHelper.login({ app, user: userInstance });
 
     done();
   });
@@ -114,7 +105,7 @@ test('find', async t => {
     t.strictEqual(response.statusCode, 400);
     t.strictEqual(
       response.json().message,
-      "body should have required property 'db'"
+      'body.collection should NOT be shorter than 4 characters'
     );
   });
 
@@ -130,8 +121,11 @@ test('find', async t => {
         db: ''
       }
     });
-    t.strictEqual(response.statusCode, 500);
-    t.strictEqual(response.json().message, 'collection names cannot be empty');
+    t.equivalent(response.json(), {
+      statusCode: 400,
+      error: 'Bad Request',
+      message: 'body.collection should NOT be shorter than 4 characters'
+    });
   });
 
   await t.test(`POST ${route} with collection and db success`, async t => {
@@ -142,12 +136,11 @@ test('find', async t => {
         Authorization: `Bearer ${t.context.token}`
       },
       payload: {
-        collection: 'foo',
-        db: 'bar'
+        collection: 'srn:coeus:acme::collection',
+        db: 'acme'
       }
     });
     t.strictEqual(response.statusCode, 200);
-    t.equivalent(response.json(), Array(0));
   });
 
   await t.test(`POST ${route} with collection, db, query success`, async t => {
@@ -158,13 +151,12 @@ test('find', async t => {
         Authorization: `Bearer ${t.context.token}`
       },
       payload: {
-        collection: 'foo',
-        db: 'bar',
+        collection: 'srn:coeus:acme::collection',
+        db: 'acme',
         query: {}
       }
     });
     t.strictEqual(response.statusCode, 200);
-    t.equivalent(response.json(), Array(0));
   });
 
   await t.test(`POST ${route} with limit under minimum`, async t => {
@@ -208,60 +200,29 @@ test('find', async t => {
     t.equivalent(response.json().length, 5);
   });
 
-  await t.test(`POST ${route} with invalid policy`, async t => {
-    const user = new User({
-      email: 'john@acme.com',
-      org: 'acme',
-      username: 'someguy',
-      password: 'password',
-      active: true,
-      policy: {
-        version: '1.1.0',
-        statement: [
-          {
-            action: 'data:find',
-            resource: 'foobar.*'
-          },
-          {
-            action: ['data:insert', 'data:update'],
-            allow: true,
-            resource: 'acme.srn:coeus:acme::collection'
-          },
-          {
-            action: ['data:delete'],
-            allow: false,
-            resource: 'acme.*'
-          }
-        ]
-      }
-    });
-
-    await new UserService(app).create(user);
-
-    const { token } = await new UserService(app).login(user);
-
+  await t.test(`POST ${route} without limit`, async t => {
     const response = await app.inject({
       method: 'POST',
       url: route,
       headers: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${t.context.token}`
       },
       payload: {
         collection: 'movies',
         db: 'sample_mflix',
         query: {
           $text: {
-            $search: 'Superman'
+            $search: 'Space'
           }
-        },
-        limit: 5
+        }
       }
     });
 
-    t.strictEqual(response.statusCode, 403);
-    // t.equivalent(response.json().length, 5);
-
-    await new UserService(app).delete(user);
+    t.strictEqual(response.statusCode, 200);
+    t.equivalent(
+      response.json().length,
+      config.get('db.thresholds.limit.base')
+    );
   });
 
   t.tearDown(async () => {

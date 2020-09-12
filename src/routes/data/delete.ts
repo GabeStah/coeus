@@ -2,25 +2,23 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 import {
   DataService,
-  DataServiceFindParams,
+  DataServiceDeleteParams,
   DataServiceParams
 } from 'src/services/DataService';
-import config from 'config';
 import { Utility } from 'src/helpers/Utility';
 import { schema } from 'src/schema';
 
 const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.route<{
-    Body: DataServiceParams & DataServiceFindParams;
+    Body: DataServiceParams & DataServiceDeleteParams;
   }>({
     handler: async (request, reply) => {
       return new DataService(instance, {
         db: request.body.db,
         collection: request.body.collection,
         payload: request.payload
-      }).find({
-        limit: request.body.limit,
-        query: request.body.query,
+      }).delete({
+        filter: request.body.filter,
         options: request.body.options
       });
     },
@@ -29,32 +27,26 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
     schema: {
       body: {
         type: 'object',
-        required: ['collection', 'db'],
+        required: ['collection', 'db', 'filter'],
         properties: {
           collection: schema.collection,
           db: schema.db,
-          limit: {
-            type: ['number', 'null'],
-            default: config.get('db.thresholds.limit.base'),
-            minimum: config.get('db.thresholds.limit.minimum'),
-            maximum: config.get('db.thresholds.limit.maximum')
+          filter: {
+            type: 'object',
+            default: {}
           },
           options: {
             type: ['object', 'null'],
             default: null
-          },
-          query: {
-            type: ['object', 'null'],
-            default: {}
           }
         }
       }
     },
-    url: Utility.route(['data.prefix', 'data.find'])
+    url: Utility.route(['data.prefix', 'data.delete'])
   });
 };
 
 export default fp(plugin, {
   fastify: '3.3.x',
-  name: `routes${Utility.route(['data.prefix', 'data.find'])}`
+  name: `routes${Utility.route(['data.prefix', 'data.delete'])}`
 });

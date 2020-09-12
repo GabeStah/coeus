@@ -51,40 +51,38 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
                   required: ['action', 'resource'],
                   properties: {
                     action: {
-                      type: ['array', 'string'],
-                      enum: [
-                        '*',
-                        'admin:*',
-                        'data:*',
-                        'data:delete',
-                        'data:find',
-                        'data:insert',
-                        'data:update'
-                      ],
-                      items: {
-                        type: 'string',
-                        enum: [
-                          '*',
-                          'admin:*',
-                          'data:*',
-                          'data:delete',
-                          'data:find',
-                          'data:insert',
-                          'data:update'
-                        ]
-                      }
+                      oneOf: [
+                        {
+                          type: 'string',
+                          enum: config.get('policy.statement.action.values')
+                        },
+                        {
+                          type: 'array',
+                          items: {
+                            type: 'string',
+                            enum: config.get('policy.statement.action.values')
+                          }
+                        }
+                      ]
                     },
                     allow: {
                       type: 'boolean',
                       default: true
                     },
                     resource: {
-                      type: ['array', 'string'],
-                      pattern: '^(?!coeus).+',
-                      items: {
-                        type: 'string',
-                        pattern: '^(?!coeus).+'
-                      }
+                      oneOf: [
+                        {
+                          type: 'array',
+                          items: {
+                            type: 'string',
+                            pattern: '^(?!coeus).+'
+                          }
+                        },
+                        {
+                          type: 'string',
+                          pattern: '^(?!coeus).+'
+                        }
+                      ]
                     }
                   }
                 }

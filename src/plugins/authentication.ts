@@ -9,11 +9,11 @@ import fastify from '../@types/fastify';
 import fp from 'fastify-plugin';
 import fastifyJwt from 'fastify-jwt';
 import config from 'config';
-import { IUser, User } from 'src/models/User';
+import { User } from 'src/models/User';
 
 const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   if (!config.get('security.jwt.secret')) {
-    throw Error("'security.jwt.secret' MUST be defined.");
+    throw new Error("'security.jwt.secret' MUST be defined.");
   }
 
   // register JWT

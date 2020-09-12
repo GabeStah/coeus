@@ -1,5 +1,5 @@
 import { User } from 'src/models/User';
-import { IPolicyStatement, PolicyStatement } from 'src/models/PolicyStatement';
+import HttpError from 'http-errors';
 
 export interface AuthorizationServiceParams {
   payload?: AuthorizationPayloadType;
@@ -8,8 +8,16 @@ export interface AuthorizationServiceParams {
 
 export type AuthorizationPayloadType = object;
 
+interface AuthorizeParams {
+  collection: string;
+  db: string;
+  method: string;
+}
+
 /**
  * Authorization service helper.
+ *
+ * Should be extended by service classes that require authorization.
  */
 export abstract class AuthorizationService {
   private readonly service: string;
@@ -20,49 +28,85 @@ export abstract class AuthorizationService {
     this.user = new User(payload);
   }
 
-  public authorize({ method }: { method: string }) {
+  /**
+   * Authorize service instance against collection, db, and method.
+   *
+   * @param collection
+   * @param db
+   * @param method
+   */
+  public authorize({ collection, db, method }: AuthorizeParams) {
     this.authorizeUser();
-    this.authorizePolicy({ method });
+    this.authorizePolicy({ collection, db, method });
     return this;
   }
 
-  private authorizePolicy({ method }: { method: string }) {
+  /**
+   * Authorize policy against collection, db, and method.
+   *
+   * @param collection
+   * @param db
+   * @param method
+   * @private
+   */
+  private authorizePolicy({ collection, db, method }: AuthorizeParams) {
     if (
-      !this.user ||
-      !this.user.policy ||
       !this.user.policy.statement ||
-      this.user.policy.statement.length < 0
+      this.user.policy.statement.length === 0
     ) {
       // Deny if no user policy
-      throw {
-        statusCode: 403,
-        error: 'Forbidden',
-        message: 'Policy is invalid: No valid policy statement provided'
-      };
+      throw new HttpError.Forbidden(
+        'Policy is invalid: No valid policy statement provided'
+      );
     }
 
-    this.user.policy.statement.forEach((statement: PolicyStatement) => {
-      // TODO: Pass resource to ensure authorization succeeds
-      statement.matchesServiceMethod({ method: method, service: this.service });
-    });
+    for (const statement of this.user.policy.statement) {
+      const matchesServiceMethod = statement.matchesServiceMethod({
+        method,
+        service: this.service
+      });
+
+      if (
+        matchesServiceMethod &&
+        statement.allow !== null && statement.allow !== undefined &&
+        !!statement.allow === false
+      ) {
+        // Deny if 'allow' property is defined and falsy
+        throw new HttpError.Forbidden(
+          'You do not have permission to perform the request'
+        );
+      }
+
+      const matchesCollectionDatabase = statement.matchesCollectionDatabase({
+        db,
+        collection
+      });
+
+      if (matchesServiceMethod && matchesCollectionDatabase) {
+        // Passed with allowed match
+        return true;
+      }
+    }
+
+    // Deny if no passing statement
+    throw new HttpError.Forbidden(
+      'You do not have permission to perform the request'
+    );
   }
 
+  /**
+   * Authorize user.
+   *
+   * Ensures that user is active.
+   *
+   * @private
+   */
   private authorizeUser() {
-    if (!this.user) {
-      // Deny if no user
-      throw {
-        statusCode: 401,
-        error: 'Unauthorized',
-        message: 'Authorization token is invalid: User is not valid'
-      };
-    }
     if (!this.user.active) {
       // Deny if not active
-      throw {
-        statusCode: 401,
-        error: 'Unauthorized',
-        message: 'Authorization token is invalid: User is inactive'
-      };
+      throw new HttpError.Forbidden(
+        'Authorization token is invalid: User is inactive'
+      );
     }
   }
 }

@@ -3,6 +3,7 @@ import config from 'config';
 import { Utility } from 'src/helpers/Utility';
 import { IUser, User } from 'src/models/User';
 import { IPolicy } from 'src/models/Policy';
+import HttpError from 'http-errors';
 
 export interface IPrivilege {
   actions: Array<string> | string;
@@ -69,7 +70,7 @@ export class UserService {
   }: UserServiceCreateParams | User) {
     // Do not create if username exists
     if (await this.exists({ username })) {
-      throw new Error(`Unable to create new user: ${username}`);
+      throw new HttpError.Conflict(`Unable to create new user: ${username}`);
     }
 
     const srn = Utility.buildSrn({ org, username });
@@ -127,30 +128,6 @@ export class UserService {
   }
 
   /**
-   * Attempt user login.
-   *
-   * @param password
-   * @param username
-   */
-  public async login({ password, username }: UserServiceLoginParams | User) {
-    const user = await this.exists({ username });
-    const errorMessage = 'Unable to authenticate with provided credentials.';
-
-    // User doesn't exist; don't indicate to public
-    if (!user) {
-      throw new Error(errorMessage);
-    }
-
-    // Invalid password provided
-    if (!(await Utility.doPasswordsMatch(password, user.password))) {
-      throw new Error(errorMessage);
-    }
-
-    // Sign and return JWT
-    return { token: await this.instance.jwt.sign(user.signature) };
-  }
-
-  /**
    * Determines if user exists
    *
    * @param username
@@ -177,8 +154,8 @@ export class UserService {
    * @param options
    */
   public async find({
-    query = {},
-    options = null
+    query,
+    options
   }: UserServiceFindParams): Promise<Array<IUser> | null> {
     const result = await this.instance.mongo.client
       .db(this.db)
@@ -187,6 +164,30 @@ export class UserService {
       .maxTimeMS(config.get('db.thresholds.timeout.maximum'));
 
     return await result.toArray();
+  }
+
+  /**
+   * Attempt user login.
+   *
+   * @param password
+   * @param username
+   */
+  public async login({ password, username }: UserServiceLoginParams | User) {
+    const user = await this.exists({ username });
+    const errorMessage = 'Unable to authenticate with provided credentials.';
+
+    // User doesn't exist; don't indicate to public
+    if (!user) {
+      throw new HttpError.Unauthorized(errorMessage);
+    }
+
+    // Invalid password provided
+    if (!(await Utility.doPasswordsMatch(password, user.password))) {
+      throw new HttpError.Unauthorized(errorMessage);
+    }
+
+    // Sign and return JWT
+    return { token: await this.instance.jwt.sign(user.signature) };
   }
 
   // /**
