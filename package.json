@@ -42,7 +42,8 @@
     "tap": "^14.10.8",
     "ts-node": "^8.6.2",
     "tsconfig-paths": "^3.9.0",
-    "typescript": "^3.8.2"
+    "typescript": "^3.8.2",
+    "typescript-json-schema": "^0.43.0"
   },
   "license": "MIT",
   "scripts": {

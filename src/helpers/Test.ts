@@ -14,12 +14,12 @@ export const DataTestHelper = {
     db,
     collection,
     document,
-    ordered
+    options
   }: { app: FastifyInstance } & DataServiceParams & DataServiceInsertParams) =>
     await app.mongo.client
       .db(db)
       .collection(collection)
-      .insertMany(document, { ordered }),
+      .insertMany(document, options),
   delete: async ({
     app,
     db,
@@ -30,7 +30,7 @@ export const DataTestHelper = {
     app.mongo.client
       .db(db)
       .collection(collection)
-      .deleteMany(filter, <object>Object.assign({}, options))
+      .deleteMany(filter, options)
   // find: async ({
   //   app,
   //   db,

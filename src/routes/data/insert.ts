@@ -12,16 +12,15 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.route<{
     Body: DataServiceParams & DataServiceInsertParams;
   }>({
-    handler: async (request, reply) => {
-      return new DataService(instance, {
+    handler: async (request, reply) =>
+      new DataService(instance, {
         db: request.body.db,
         collection: request.body.collection,
         payload: request.payload
       }).insert({
         document: request.body.document,
-        ordered: request.body.ordered
-      });
-    },
+        options: request.body.options
+      }),
     preValidation: [instance.verifyJwt],
     method: 'POST',
     schema: {
@@ -39,9 +38,9 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
             },
             minItems: 1
           },
-          ordered: {
-            type: 'boolean',
-            default: true
+          options: {
+            type: ['object', 'null'],
+            default: null
           }
         }
       }

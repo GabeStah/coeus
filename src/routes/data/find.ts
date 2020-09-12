@@ -13,8 +13,8 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.route<{
     Body: DataServiceParams & DataServiceFindParams;
   }>({
-    handler: async (request, reply) => {
-      return new DataService(instance, {
+    handler: async (request, reply) =>
+      new DataService(instance, {
         db: request.body.db,
         collection: request.body.collection,
         payload: request.payload
@@ -22,8 +22,7 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
         limit: request.body.limit,
         query: request.body.query,
         options: request.body.options
-      });
-    },
+      }),
     preValidation: [instance.verifyJwt],
     method: 'POST',
     schema: {

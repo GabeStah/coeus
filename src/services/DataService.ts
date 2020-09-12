@@ -5,6 +5,12 @@ import {
   AuthorizationService
 } from 'src/services/AuthorizationService';
 import values from 'lodash/values';
+import {
+  CollectionInsertManyOptions,
+  CommonOptions,
+  FindOneOptions,
+  UpdateManyOptions
+} from 'mongodb';
 
 export interface DataServiceParams {
   db: string;
@@ -14,18 +20,24 @@ export interface DataServiceParams {
 
 export interface DataServiceDeleteParams {
   filter: object;
-  options?: any;
+  options?: CommonOptions;
 }
 
 export interface DataServiceFindParams {
   limit?: number;
   query?: object;
-  options?: any;
+  options?: FindOneOptions<any>;
 }
 
 export interface DataServiceInsertParams {
   document: Array<object>;
-  ordered?: boolean;
+  options?: CollectionInsertManyOptions;
+}
+
+export interface DataServiceUpdateParams {
+  filter: object;
+  update: object;
+  options?: UpdateManyOptions;
 }
 
 /**
@@ -49,7 +61,8 @@ export class DataService extends AuthorizationService {
   /**
    * Delete documents based on filter query.
    *
-   * @see https://docs.mongodb.com/manual/reference/operator/
+   * @see https://docs.mongodb.com/manual/reference/method/db.collection.deleteMany/
+   * @see http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#deleteMany
    *
    * @param filter
    * @param options
@@ -64,7 +77,7 @@ export class DataService extends AuthorizationService {
     const result = await this.instance.mongo.client
       .db(this.db)
       .collection(this.collection)
-      .deleteMany(filter, <object>Object.assign({}, options));
+      .deleteMany(filter, options);
 
     if (result.deletedCount > 0) {
       return {
@@ -84,7 +97,8 @@ export class DataService extends AuthorizationService {
   /**
    * Find documents by query and options.
    *
-   * @see https://docs.mongodb.com/manual/reference/operator/
+   * @see https://docs.mongodb.com/manual/reference/method/db.collection.find/
+   * @see http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#find
    *
    * @param limit
    * @param query
@@ -110,10 +124,13 @@ export class DataService extends AuthorizationService {
   /**
    * Insert documents array.
    *
+   * @see https://docs.mongodb.com/manual/reference/method/db.collection.insertMany/
+   * @see http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#insertMany
+   *
    * @param document
-   * @param ordered A boolean specifying whether the mongo instance should perform an ordered or unordered insert.
+   * @param options
    */
-  public async insert({ document, ordered }: DataServiceInsertParams) {
+  public async insert({ document, options }: DataServiceInsertParams) {
     this.authorize({
       collection: this.collection,
       db: this.db,
@@ -123,7 +140,7 @@ export class DataService extends AuthorizationService {
     const result = await this.instance.mongo.client
       .db(this.db)
       .collection(this.collection)
-      .insertMany(document, { ordered });
+      .insertMany(document, options);
 
     return {
       statusCode: 200,
@@ -131,6 +148,37 @@ export class DataService extends AuthorizationService {
         result.insertedCount > 1 ? 's' : ''
       } inserted`,
       data: values(result.insertedIds)
+    };
+  }
+
+  /**
+   * Update documents array based on passed filter.
+   *
+   * @see https://docs.mongodb.com/drivers/node/usage-examples/updateMany
+   * @see https://docs.mongodb.com/manual/reference/method/db.collection.updateMany/
+   * @see http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#updateMany
+   *
+   * @param filter
+   * @param options
+   * @param update
+   */
+  public async update({ filter, update, options }: DataServiceUpdateParams) {
+    this.authorize({
+      collection: this.collection,
+      db: this.db,
+      method: 'update'
+    });
+
+    const result = await this.instance.mongo.client
+      .db(this.db)
+      .collection(this.collection)
+      .updateMany(filter, update, options);
+
+    return {
+      statusCode: 200,
+      message: `${result.modifiedCount} document${
+        result.modifiedCount > 1 ? 's' : ''
+      } updated`
     };
   }
 }

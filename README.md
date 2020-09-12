@@ -47,8 +47,11 @@
     - [/data/delete](#datadelete)
       - [/data/delete Schema](#datadelete-schema)
       - [/data/delete Request Example](#datadelete-request-example)
-    - [/data/insert](#datainsert-1)
+    - [/data/update](#dataupdate)
+      - [/data/update Schema](#dataupdate-schema)
+      - [/data/update Request Example](#dataupdate-request-example)
   - [TODO](#todo)
+    - [Performance Check: Retrieve User from Database on Every Request](#performance-check-retrieve-user-from-database-on-every-request)
     - [/data/delete Logic Check: `_id` Property](#datadelete-logic-check-_id-property)
     - [Pagination](#pagination)
     - [/user/login Option: email](#userlogin-option-email)
@@ -57,6 +60,8 @@
     - [Request Option: email](#request-option-email)
     - [PolicyStatement Property: ip](#policystatement-property-ip)
     - [PolicyStatement Property: hostname](#policystatement-property-hostname)
+    - [/user/explain Endpoint](#userexplain-endpoint)
+    - [/user/activate Endpoint](#useractivate-endpoint)
     - [API Documentation Generator](#api-documentation-generator)
 
 # Coeus
@@ -857,15 +862,93 @@ $ curl --location --request POST 'http://localhost:8000/data/delete' \
 }
 ```
 
-### /data/insert
+### /data/update
 
-TODO
+Update one or more documents by sending a `POST` request to the `/data/update` endpoint.
+
+The body _MUST_ contain:
+
+- `db`: The database name to access.
+- `collection`: The collection name within the database to access.
+- `filter`: MongoDB-compatible object defining the filter query on which to base update targets.
+- `update`: MongoDB-compatible object defining the document shape with which to update.
+
+The body _MAY_ contain:
+
+- `options`: MongoDB-compatible object defining method options.
+
+See [MongoDb Collection.updateMany()](http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#updateMany) for parameter option details.
+
+#### /data/update Schema
+
+```js
+const schema = {
+  type: 'object',
+  required: ['collection', 'db', 'filter', 'update'],
+  properties: {
+    collection: schema.collection,
+    db: schema.db,
+    filter: {
+      type: 'object',
+      minProperties: 1,
+      default: null
+    },
+    options: {
+      type: ['object', 'null'],
+      default: null
+    },
+    update: {
+      type: 'object',
+      minProperties: 1,
+      default: null
+    }
+  }
+};
+```
+
+#### /data/update Request Example
+
+**Example**: Update all documents with a `data` key value that matches the RegEx `^bar` (begins with 'bar') within the `acme.srn:coeus:acme::collection` collection. For all matched documents, set the `data` key value to `foo`:
+
+```bash
+$ curl --location --request POST 'http://localhost:8000/data/update' \
+--header 'Authorization: Bearer <JWT>' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "collection": "srn:coeus:acme::collection",
+    "db": "acme",
+    "filter": {
+        "data": {
+            "$regex": "^bar"
+        }
+    },
+    "update": {
+        "$set": {
+            "data": "foo"
+        }
+    }
+}'
+```
+
+**Response** indicates the number of updated documents:
+
+```json
+{
+  "statusCode": 200,
+  "message": "2 documents updated"
+}
+```
 
 ## TODO
 
+### Performance Check: Retrieve User from Database on Every Request
+
+- Using JWT payload to determin Policy is preferred for speed, but the only means of disabling a User for an Admin is to wait for JWT token expiration.
+- If not a significant performance loss, checking User Database record before processing request allows for immediate revocation of JWT / User Policy permissions.
+
 ### /data/delete Logic Check: `_id` Property
 
-If a `/data/delete` `filter` object key is `_id`, perform backend conversion of value to `ObjectId(value)` before making MongoDB request to ensure proper parsing.
+- If a `/data/delete` `filter` object key is `_id`, perform backend conversion of value to `ObjectId(value)` before making MongoDB request to ensure proper parsing.
 
 ### Pagination
 
@@ -895,6 +978,14 @@ If a `/data/delete` `filter` object key is `_id`, perform backend conversion of 
 ### PolicyStatement Property: hostname
 
 - Restrict requests from hostname
+
+### /user/explain Endpoint
+
+- Explains Policy rules of specified User(s), such as `db` and `collection` access, and associated `service` and `method` allowances.
+
+### /user/activate Endpoint
+
+- Endpoint for activating specified User(s), so they can login, recieve JWT, and make requests.
 
 ### API Documentation Generator
 
