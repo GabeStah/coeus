@@ -9,13 +9,26 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
     Body: UserServiceCreateParams;
   }>({
     handler: async (request, reply) => {
-      return new UserService(instance).create({
+      const createdUser = await new UserService(instance).create({
         email: request.body.email,
         org: request.body.org,
         password: request.body.password,
         username: request.body.username,
         policy: request.body.policy
       });
+
+      if (createdUser && createdUser.data?.email) {
+        // TODO: Send verification email
+        const result = await instance.mailer.sendMail({
+          from: `${config.get('mail.from.name')} <${config.get(
+            'mail.from.address'
+          )}>`,
+          to: createdUser.data.email,
+          subject: 'Message Subject',
+          text: 'Test message text!'
+        });
+      }
+      return createdUser;
     },
     method: 'POST',
     schema: {

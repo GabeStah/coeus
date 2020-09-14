@@ -73,6 +73,16 @@ export class UserService {
       throw new HttpError.Conflict(`Unable to create new user: ${username}`);
     }
 
+    const user = new User({
+      active,
+      email,
+      org,
+      password,
+      username,
+      policy,
+      verified
+    });
+
     const srn = Utility.buildSrn({ org, username });
     const result = await this.instance.mongo.client
       .db(this.db)
@@ -80,11 +90,12 @@ export class UserService {
       .insertOne({
         active,
         email,
+        hash: user.toHash(),
         org,
-        srn,
         password: await Utility.hashPassword({ password }),
-        username,
         policy,
+        srn,
+        username,
         verified
       });
     return {
@@ -93,9 +104,9 @@ export class UserService {
         active,
         email,
         org,
+        policy,
         srn,
         username,
-        policy,
         verified
       }
     };

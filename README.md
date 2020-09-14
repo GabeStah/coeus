@@ -104,7 +104,7 @@ $ curl -X POST "localhost:8000/status"
 
 ### Coverage
 
-`yarn run test:coverage` will generate a full test coverage report using [IstanbulJS](https://github.com/istanbuljs/istanbuljs), e.g:
+`yarn run test:coverage` generates a full test coverage report using [IstanbulJS](https://github.com/istanbuljs/istanbuljs). The generated HTML report can be found in the `coverage/lcov-report`, e.g.:
 
 | Statements        |       | Branches |       | Functions |       | Lines |       |
 | ----------------- | ----- | -------- | ----- | --------- | ----- | ----- | ----- |
@@ -941,10 +941,20 @@ $ curl --location --request POST 'http://localhost:8000/data/update' \
 
 ## TODO
 
-### Performance Check: Retrieve User from Database on Every Request
+### Compression
 
-- Using JWT payload to determin Policy is preferred for speed, but the only means of disabling a User for an Admin is to wait for JWT token expiration.
-- If not a significant performance loss, checking User Database record before processing request allows for immediate revocation of JWT / User Policy permissions.
+- [x] Integrate response payload compression.
+
+### Performance Check: Cache In-Memory User Data
+
+- Using JWT payload to determine Policy is preferred for speed, but the only means of disabling a User for an Admin is to wait for JWT token expiration.
+- Cache User db permissions in-memory for validation against request. Update in-memory cache on any relevant `/user` successful endpoint request.
+- Use `coeus.users` `hash` property for fast validation, comparing JWT hash to in-memory hash.
+
+Generate `hash` when:
+
+- User document inserted into db
+- User document updated in db
 
 ### /data/delete Logic Check: `_id` Property
 
@@ -954,10 +964,32 @@ $ curl --location --request POST 'http://localhost:8000/data/update' \
 
 - see: https://docs.mongodb.com/manual/indexes/#indexes
 
+### Caching
+
+- Apply request caching; in-memory or Redis-powered.
+
+### CORS Support
+
+- Add CORS support.
+- Integrate with `PolicyStatement` `ip` / `hostname` properties.
+
+### /user/register Option: email
+
+- [x] Integrate email support (AWS SES)
+- Email verification token to user email address.
+- Clicking should set User `verified = true`.
+- Upon verification email user with confirmation and inform to await admin activation.
+
 ### /user/login Option: email
 
 - Email generated JWT token to user email address.
-- User must be `verified`.
+- Send attachment
+- User must be `active` and `verified`.
+
+### /user/activate Endpoint
+
+- Endpoint for activating specified User(s), so they can login, recieve JWT, and make requests.
+- Upon activation email User with JWT.
 
 ### Request Option: idempotence_id
 
@@ -982,10 +1014,6 @@ $ curl --location --request POST 'http://localhost:8000/data/update' \
 ### /user/explain Endpoint
 
 - Explains Policy rules of specified User(s), such as `db` and `collection` access, and associated `service` and `method` allowances.
-
-### /user/activate Endpoint
-
-- Endpoint for activating specified User(s), so they can login, recieve JWT, and make requests.
 
 ### API Documentation Generator
 

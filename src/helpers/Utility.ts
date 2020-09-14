@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import config from 'config';
+import hash from 'object-hash';
 
 /**
  * Utility helper class.
@@ -24,6 +25,15 @@ export class Utility {
    */
   public static async doPasswordsMatch(password: string, hash: string) {
     return await bcrypt.compare(password, hash);
+  }
+
+  /**
+   * Hash the passed data.
+   *
+   * @param data
+   */
+  public static hash(data: any) {
+    return hash(data);
   }
 
   /**

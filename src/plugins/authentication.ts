@@ -27,6 +27,11 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
     }
   });
 
+  // TODO: Get all coeus.users data
+  // Create in-memory map between user._id and user.hash
+  // Within verifyJwt() method lookup user._id in memory.
+  // If _id exists and hashes match, allow request, else deny
+
   // Add JWT verification method to instance
   instance.decorate('verifyJwt', async function(
     request: FastifyRequest,

@@ -6,6 +6,7 @@ import {
   RawServerDefault
 } from "fastify/types/utils";
 import { FastifyLoggerInstance } from "fastify/types/logger";
+import Mail from "nodemailer/lib/mailer";
 
 declare module 'fastify' {
   /**
@@ -21,6 +22,7 @@ declare module 'fastify' {
     > = RawReplyDefaultExpression<RawServer>,
     Logger = FastifyLoggerInstance
   > {
+    mailer: Mail;
     mongo: { client: MongoClient };
     verifyJwt: any;
   }
