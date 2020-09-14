@@ -2,7 +2,7 @@
   "name": "coeus",
   "private": true,
   "description": "Titan of insight and intellect.",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "author": "Gabe Wyatt <gabe@solarixdigital.com>",
   "devDependencies": {
     "@babel/core": "^7.8.4",
