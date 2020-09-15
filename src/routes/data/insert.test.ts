@@ -1,10 +1,8 @@
-import { test } from 'tap';
-import { build } from 'src/app';
-import { User } from 'src/models/User';
-import { Utility } from 'src/helpers/Utility';
-import { UserService } from 'src/services/UserService';
-import config from 'config';
-import { UserTestHelper } from 'src/helpers/Test';
+import { test } from "tap";
+import { build } from "src/app";
+import { User } from "src/models/User";
+import { Utility } from "src/helpers/Utility";
+import { TestHelper, UserTestHelper } from "src/helpers/Test";
 
 test('routes/data/insert', async t => {
   const app = build();
@@ -48,7 +46,8 @@ test('routes/data/insert', async t => {
   await UserTestHelper.create({ app, user: userInstance });
 
   const getRequestResponse = async (params?: any) => {
-    return app.inject(
+    return TestHelper.inject(
+      app,
       Object.assign(
         {
           method: 'POST',
@@ -64,15 +63,6 @@ test('routes/data/insert', async t => {
       )
     );
   };
-
-  // t.beforeEach(async (done, t) => {
-  //   // Ensure created
-  //   await UserTestHelper.create({ app, user: userInstance });
-  //   // Login and get token
-  //   t.context.token = await UserTestHelper.login({ app, user: userInstance });
-  //
-  //   done();
-  // });
 
   await t.test(`GET ${route}`, async t => {
     const response = await getRequestResponse({
@@ -204,7 +194,7 @@ test('routes/data/insert', async t => {
   });
 
   t.tearDown(async () => {
-    await new UserService(app).delete(userInstance);
+    await UserTestHelper.delete({ app, user: userInstance });
     return app.close();
   });
   t.end();

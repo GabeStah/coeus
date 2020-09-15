@@ -3,13 +3,14 @@ import fp from 'fastify-plugin';
 import { UserService, UserServiceCreateParams } from 'src/services/UserService';
 import { Utility } from 'src/helpers/Utility';
 import config from 'config';
+import { sendVerificationEmail } from 'src/helpers/Mail';
 
 const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.route<{
     Body: UserServiceCreateParams;
   }>({
     handler: async (request, reply) => {
-      const createdUser = await new UserService(instance).create({
+      const user = await new UserService(instance).create({
         email: request.body.email,
         org: request.body.org,
         password: request.body.password,
@@ -17,19 +18,26 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
         policy: request.body.policy
       });
 
-      if (createdUser && createdUser.data?.email) {
-        // TODO: Send verification email
-        const result = await instance.mailer.sendMail({
-          from: `${config.get('mail.from.name')} <${config.get(
-            'mail.from.address'
-          )}>`,
-          to: createdUser.data.email,
-          subject: 'Message Subject',
-          text: 'Test message text!'
-        });
-      }
-      return createdUser;
+      // Update hash map
+      await instance.updateUserHashMap();
+
+      // Add user to context for hook handling
+      instance.requestContext.set('user', user);
+
+      return {
+        message: 'User successfully created.',
+        data: {
+          active: user.active,
+          email: user.email,
+          org: user.org,
+          policy: user.policy.toObject(),
+          srn: user.srn,
+          username: user.username,
+          verified: user.verified
+        }
+      };
     },
+    onResponse: [sendVerificationEmail],
     method: 'POST',
     schema: {
       body: {

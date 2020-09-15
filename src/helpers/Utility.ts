@@ -1,6 +1,8 @@
-import bcrypt from 'bcryptjs';
-import config from 'config';
-import hash from 'object-hash';
+import bcrypt from "bcryptjs";
+import config from "config";
+import hash from "object-hash";
+import crypto from "crypto";
+import { FastifyRequest } from "fastify";
 
 /**
  * Utility helper class.
@@ -28,6 +30,13 @@ export class Utility {
   }
 
   /**
+   * Generate a randomized token.
+   */
+  public static generateToken(size = 60, encoding: BufferEncoding = 'hex') {
+    return crypto.randomBytes(size).toString(encoding);
+  }
+
+  /**
    * Hash the passed data.
    *
    * @param data
@@ -52,6 +61,15 @@ export class Utility {
   }) {
     const salt = await bcrypt.genSalt(iterations);
     return bcrypt.hash(password, salt);
+  }
+
+  /**
+   * Determine if header indicates test environment.
+   *
+   * @param request
+   */
+  public static isTest(request: FastifyRequest) {
+    return request.headers['x-source-type'] === 'test';
   }
 
   /**

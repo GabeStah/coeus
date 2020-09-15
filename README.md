@@ -16,9 +16,11 @@
   - [Users, Authentication, and Authorization](#users-authentication-and-authorization)
     - [User Registration](#user-registration)
       - [/user/register Request Example](#userregister-request-example)
+    - [User Email Verification](#user-email-verification)
     - [User Login](#user-login)
       - [/user/login Request Example](#userlogin-request-example)
     - [Authentication](#authentication)
+      - [User Hash Map Cache](#user-hash-map-cache)
     - [Authorization](#authorization)
       - [Policy](#policy)
         - [Policy Statement: Property Case Sensitivity](#policy-statement-property-case-sensitivity)
@@ -51,17 +53,22 @@
       - [/data/update Schema](#dataupdate-schema)
       - [/data/update Request Example](#dataupdate-request-example)
   - [TODO](#todo)
-    - [Performance Check: Retrieve User from Database on Every Request](#performance-check-retrieve-user-from-database-on-every-request)
+    - [Compression](#compression)
+    - [In-Memory Cache of User Data](#in-memory-cache-of-user-data)
     - [/data/delete Logic Check: `_id` Property](#datadelete-logic-check-_id-property)
     - [Pagination](#pagination)
+    - [Logging](#logging)
+    - [Caching](#caching)
+    - [CORS Support](#cors-support)
+    - [/user/register Option: email](#userregister-option-email)
     - [/user/login Option: email](#userlogin-option-email)
+    - [/user/activate Endpoint](#useractivate-endpoint)
     - [Request Option: idempotence_id](#request-option-idempotence_id)
     - [Request Option: format](#request-option-format)
     - [Request Option: email](#request-option-email)
     - [PolicyStatement Property: ip](#policystatement-property-ip)
     - [PolicyStatement Property: hostname](#policystatement-property-hostname)
     - [/user/explain Endpoint](#userexplain-endpoint)
-    - [/user/activate Endpoint](#useractivate-endpoint)
     - [API Documentation Generator](#api-documentation-generator)
 
 # Coeus
@@ -327,6 +334,12 @@ This successfully registers the above user and responds with the created message
 }
 ```
 
+### User Email Verification
+
+A `verificationToken` sub-document is attached to the User document upon registration. The User is emailed a verification link upon registration. Clicking this route verifies the User's email address, setting the `verified` property to `true` and removing the `verificationToken` sub-document.
+
+The `verificationToken` is a 60-character string and expires after 24 hours.
+
 ### User Login
 
 After registering a User may send a request to the `/user/login` endpoint to authenticate and retrieve their unique JSON Web Token (JWT).
@@ -406,6 +419,42 @@ $ curl --location --request POST 'http://localhost:8000/data/find' \
   }
 }'
 ```
+
+#### User Hash Map Cache
+
+**Problem**: The content of the JWT payload is trustworthy and authenticates the defined User along with their appropriate Policy permissions. However, business requirements strongly discourage reliance on JWT expiration dates, since this would require third-party services relying on Coeus to re-authenticate and setup a new JWT `Authorization` token after ever JWT expiration. Beyond that, when an Admin has need to disable a User or rotate a given JWT the app needs a method for determining the validity of an existing JWT. Making a database call on every request to verify the incoming request against the `coeus.users` collection is infeasible and costly.
+
+**Solution**: Coeus maintains an in-memory hashmap of `coeus.users` data:
+
+```json
+{
+  "5f5f35bceb2bfe1b0c5fab57": "2176dc31c298ae2a1b88409158402596d2fda788",
+  "5f5f3611a897730f002fbf0f": "5f39ac60b004857da58afbd29e2ec6f8d38a65c2",
+  "5f600bc48496ae4e6091f648": "0ad2768804d4d6c96d8a14b75bc12839693e28a9",
+  "5f60160c42b3c361103fab6e": "1c6ce905339e03c91e15b561fdcaff23e7fbe3dd",
+  "5f601764ecdb2d584868scce": "b334a2cd2f35462561ea380c9a1eed694d50606a"
+}
+```
+
+Each `hash` value contains the hashed value of the matching User's relevant data, e.g.:
+
+```js
+{
+  active: this.active,
+  email: this.email,
+  id: this.id,
+  org: this.org,
+  password: this.password,
+  policy: this.policy.toObject(),
+  username: this.username,
+  srn: this.srn,
+  verified: this.verified
+}
+```
+
+During JWT verification within a **protected** endpoint the payload's `hash` is compared to the in-memory hashmap value. A match indicates that the passed JWT is up-to-date and can be trusted, while a mismatch indicates that the JWT is out of date and should be denied.
+
+The local cached User hashmap is updated anytime User db data is generated or updated. This allows Coeus to maintain real-time JWT validation without making unnecessary database calls on every request.
 
 ### Authorization
 
@@ -945,16 +994,16 @@ $ curl --location --request POST 'http://localhost:8000/data/update' \
 
 - [x] Integrate response payload compression.
 
-### Performance Check: Cache In-Memory User Data
+### In-Memory Cache of User Data
 
-- Using JWT payload to determine Policy is preferred for speed, but the only means of disabling a User for an Admin is to wait for JWT token expiration.
-- Cache User db permissions in-memory for validation against request. Update in-memory cache on any relevant `/user` successful endpoint request.
-- Use `coeus.users` `hash` property for fast validation, comparing JWT hash to in-memory hash.
+- [x] Using JWT payload to determine Policy is preferred for speed, but the only means of disabling a User for an Admin is to wait for JWT token expiration.
+- [x] Cache User db permissions in-memory for validation against request. Update in-memory cache on any relevant successful `/user` endpoint request.
+- [x] Use `coeus.users` `hash` property for fast validation, comparing JWT hash to in-memory hash.
 
 Generate `hash` when:
 
-- User document inserted into db
-- User document updated in db
+- [x] User document inserted into db
+- [x] User document updated in db
 
 ### /data/delete Logic Check: `_id` Property
 
@@ -963,6 +1012,10 @@ Generate `hash` when:
 ### Pagination
 
 - see: https://docs.mongodb.com/manual/indexes/#indexes
+
+### Logging
+
+- Integrate into CloudWatch logs
 
 ### Caching
 
@@ -976,9 +1029,9 @@ Generate `hash` when:
 ### /user/register Option: email
 
 - [x] Integrate email support (AWS SES)
-- Email verification token to user email address.
-- Clicking should set User `verified = true`.
-- Upon verification email user with confirmation and inform to await admin activation.
+- [x] Email verification token to user email address.
+- [x] Clicking should set User `verified = true`.
+- [x] Upon verification email user with confirmation and inform to await admin activation.
 
 ### /user/login Option: email
 

@@ -5,6 +5,7 @@ import validate from 'src/plugins/hooks/preValidation';
 import authentication from 'src/plugins/authentication';
 import fastifyCompress from 'fastify-compress';
 import mail from 'src/plugins/mail';
+import { fastifyRequestContextPlugin } from 'fastify-request-context';
 // import fastifyCaching from 'fastify-caching';
 // import fastifyCors from 'fastify-cors';
 
@@ -31,6 +32,10 @@ export function build() {
   instance.register(authentication);
   // mail
   instance.register(mail);
+  // request context
+  instance.register(fastifyRequestContextPlugin, {
+    hook: 'preValidation'
+  });
   // routes
   instance.register(routes);
   // validation

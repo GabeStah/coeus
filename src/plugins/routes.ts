@@ -6,6 +6,7 @@ import dataInsert from 'src/routes/data/insert';
 import dataUpdate from 'src/routes/data/update';
 import userLogin from 'src/routes/user/login';
 import userRegister from 'src/routes/user/register';
+import userVerify from 'src/routes/user/verify';
 import status from 'src/routes/status';
 
 const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
@@ -15,6 +16,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   fastify.register(dataUpdate);
   fastify.register(userLogin);
   fastify.register(userRegister);
+  fastify.register(userVerify);
   fastify.register(status);
 };
 

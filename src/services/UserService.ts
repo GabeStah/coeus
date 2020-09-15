@@ -4,6 +4,8 @@ import { Utility } from 'src/helpers/Utility';
 import { IUser, User } from 'src/models/User';
 import { IPolicy } from 'src/models/Policy';
 import HttpError from 'http-errors';
+import { ObjectID, UpdateManyOptions, UpdateOneOptions } from 'mongodb';
+import { DataServiceUpdateParams } from 'src/services/DataService';
 
 export interface IPrivilege {
   actions: Array<string> | string;
@@ -33,11 +35,30 @@ export interface UserServiceLoginParams {
   username: string;
 }
 
+export interface UserServiceVerifyParams {
+  token: string;
+}
+
+// export interface UserServiceUpdateParams {
+//   active?: boolean;
+//   email?: string;
+//   _id: ObjectID | string;
+//   org?: string;
+//   password?: string;
+//   username?: string;
+//   policy?: IPolicy;
+//   verified?: boolean;
+// }
+
 export interface UserServiceUpdateParams {
-  email: string;
-  org: string;
-  password?: string;
-  policy: IPolicy;
+  filter: object;
+  update: object;
+  options?: UpdateOneOptions;
+}
+
+export interface UserServiceUpdateByIdParams {
+  update: object;
+  options?: UpdateOneOptions;
 }
 
 /**
@@ -73,6 +94,12 @@ export class UserService {
       throw new HttpError.Conflict(`Unable to create new user: ${username}`);
     }
 
+    const verificationToken = {
+      // Expires in 24 hours
+      expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+      value: Utility.generateToken()
+    };
+
     const user = new User({
       active,
       email,
@@ -80,10 +107,12 @@ export class UserService {
       password,
       username,
       policy,
-      verified
+      verified,
+      verificationToken
     });
 
     const srn = Utility.buildSrn({ org, username });
+
     const result = await this.instance.mongo.client
       .db(this.db)
       .collection(this.collection)
@@ -96,20 +125,11 @@ export class UserService {
         policy,
         srn,
         username,
-        verified
+        verified,
+        verificationToken
       });
-    return {
-      message: 'User successfully created.',
-      data: {
-        active,
-        email,
-        org,
-        policy,
-        srn,
-        username,
-        verified
-      }
-    };
+
+    return user;
   }
 
   /**
@@ -141,15 +161,11 @@ export class UserService {
   /**
    * Determines if user exists
    *
-   * @param username
+   * @param query
    */
-  public async exists({
-    username
-  }: {
-    username: string;
-  }): Promise<User | null> {
+  public async exists(query: object): Promise<User | null> {
     // Check for existing username
-    const match = await this.find({ query: { username } });
+    const match = await this.find({ query });
 
     if (match && match.length > 0) {
       return new User(match[0]);
@@ -159,7 +175,7 @@ export class UserService {
   }
 
   /**
-   * Find documents by query and options.
+   * Find Users by query and options.
    *
    * @param query
    * @param options
@@ -167,18 +183,31 @@ export class UserService {
   public async find({
     query,
     options
-  }: UserServiceFindParams): Promise<Array<IUser> | null> {
+  }: UserServiceFindParams): Promise<Array<User> | null> {
     const result = await this.instance.mongo.client
       .db(this.db)
       .collection(this.collection)
       .find(query, options)
       .maxTimeMS(config.get('db.thresholds.timeout.maximum'));
 
-    return await result.toArray();
+    const data = await result.toArray();
+    return data.map(item => new User(item));
   }
 
   /**
-   * Attempt user login.
+   * Get verification URL from token string.
+   *
+   * @param token
+   */
+  public static getVerificationUrl(token: string) {
+    return `${config.get('routes.root')}${Utility.route([
+      'user.prefix',
+      'user.verify'
+    ])}?token=${token}`;
+  }
+
+  /**
+   * Attempt User login.
    *
    * @param password
    * @param username
@@ -201,50 +230,83 @@ export class UserService {
     return { token: await this.instance.jwt.sign(user.signature) };
   }
 
-  // /**
-  //  * Update a user record.
-  //  *
-  //  * @param email
-  //  * @param org
-  //  * @param password
-  //  * @param username
-  //  * @param privileges
-  //  */
-  // public async update({
-  //                       email,
-  //                       org,
-  //                       password,
-  //                       username,
-  //                       policy
-  //                     }: UserServiceCreateParams) {
-  //   // Do not create if username exists
-  //   if (await this.exists({ username })) {
-  //     throw new Error(`Unable to create new user: ${username}`);
-  //   }
-  //
-  //   const srn = Utility.buildSrn({ org, username });
-  //   const result = await this.instance.mongo.client
-  //     .db(this.db)
-  //     .collection(this.collection)
-  //     .insertOne({
-  //       email,
-  //       org,
-  //       srn,
-  //       password: await Utility.hashPassword({ password }),
-  //       username,
-  //       active: false,
-  //       verified: false,
-  //       policy
-  //     });
-  //   return {
-  //     message: 'User successfully created.',
-  //     data: {
-  //       email,
-  //       org,
-  //       srn,
-  //       username,
-  //       policy
-  //     }
-  //   };
-  // }
+  /**
+   * Update a user record.
+   *
+   * @param filter
+   * @param update
+   * @param options
+   */
+  public async update({ filter, update, options }: UserServiceUpdateParams) {
+    const result = await this.instance.mongo.client
+      .db(this.db)
+      .collection(this.collection)
+      .updateOne(filter, update, options);
+
+    return {
+      statusCode: 200,
+      message: `User ${result.modifiedCount == 0 ? 'not ' : ''}updated`
+    };
+  }
+
+  /**
+   * Update a user record by id.
+   *
+   * @param id
+   * @param update
+   * @param options
+   */
+  public async updateById(
+    id: string,
+    { update, options }: UserServiceUpdateByIdParams
+  ) {
+    const result = await this.instance.mongo.client
+      .db(this.db)
+      .collection(this.collection)
+      .updateOne({ _id: new ObjectID(id) }, update, options);
+
+    return {
+      statusCode: 200,
+      message: `User ${result.modifiedCount == 0 ? 'not ' : ''}updated`
+    };
+  }
+
+  /**
+   * Verify User based on passed token.
+   *
+   * @param token
+   */
+  public async verify({ token }: UserServiceVerifyParams) {
+    const user = await this.exists({ 'verificationToken.value': token });
+    const errorMessage = 'Verification token is invalid.';
+
+    // User doesn't exist
+    if (!user) {
+      throw new HttpError.Unauthorized(errorMessage);
+    }
+
+    const tokenExpired = Date.now() >= user.verificationToken.expiresAt;
+
+    const updatedUser = await this.updateById(user.id, {
+      update: {
+        // Set verified boolean to expiration inverse
+        $set: { verified: !tokenExpired },
+        // Remove verificationToken subdocument
+        $unset: { verificationToken: null }
+      }
+    });
+
+    if (updatedUser.statusCode !== 200) {
+      throw new HttpError.Unauthorized(errorMessage);
+    }
+
+    if (tokenExpired) {
+      throw new HttpError.Unauthorized('Verification token has expired.');
+    }
+
+    return {
+      statusCode: 200,
+      message: `User successfully verified.`
+    };
+  }
 }

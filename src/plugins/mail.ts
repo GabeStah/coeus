@@ -21,6 +21,21 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       })
     })
   );
+
+  const testAccount = await nodemailer.createTestAccount();
+
+  fastify.decorate(
+    'testMailer',
+    nodemailer.createTransport({
+      host: testAccount.smtp.host,
+      port: testAccount.smtp.port,
+      secure: testAccount.smtp.secure,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass
+      }
+    })
+  );
 };
 
 export default fp(plugin, {

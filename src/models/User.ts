@@ -1,31 +1,45 @@
-import { IPolicy, Policy } from 'src/models/Policy';
-import faker from 'faker';
-import { Utility } from 'src/helpers/Utility';
+import { Policy } from "src/models/Policy";
+import faker from "faker";
+import { Utility } from "src/helpers/Utility";
+import { ObjectID } from "mongodb";
+
+interface IUserVerificationToken {
+  expiresAt: number;
+  value: string;
+}
 
 export interface IUser {
   active?: boolean;
   email: string;
   hash?: string;
+  _id?: ObjectID | string;
   org: string;
   password: string;
   policy: Policy;
   username: string;
   srn?: string;
   verified?: boolean;
+  verificationToken?: IUserVerificationToken;
 }
 
 export class User implements IUser {
   public active: boolean = false;
   public email: string;
   public hash: string;
+  public _id: ObjectID;
   public org: string;
   public password: string;
   public policy: Policy;
   public srn: string;
   public username: string;
   public verified: boolean = false;
+  public verificationToken: IUserVerificationToken;
 
   constructor(params: Partial<IUser | any>) {
+    if (params._id) {
+      this._id =
+        params._id instanceof ObjectID ? params._id : new ObjectID(params._id);
+    }
     this.active = params.active;
     this.email = params.email;
     this.hash = params.hash;
@@ -35,34 +49,8 @@ export class User implements IUser {
     this.srn = params.srn;
     this.username = params.username;
     this.verified = params.verified;
+    this.verificationToken = params.verificationToken;
   }
-
-  // /**
-  //  * Generate hash representation from User properties.
-  //  *
-  //  * @param active
-  //  * @param policy
-  //  * @param username
-  //  * @param verified
-  //  */
-  // static hash({
-  //   active,
-  //   policy,
-  //   username,
-  //   verified
-  // }: {
-  //   active: boolean;
-  //   policy: Policy | object;
-  //   username: string;
-  //   verified: boolean;
-  // }) {
-  //   return Utility.hash({
-  //     active,
-  //     policy,
-  //     username,
-  //     verified
-  //   });
-  // }
 
   /**
    * Create fake User.
@@ -93,6 +81,13 @@ export class User implements IUser {
   }
 
   /**
+   * Get id string from MongoDB ObjectID.
+   */
+  get id() {
+    return this._id?.toString();
+  }
+
+  /**
    * Get payload signature representing User.
    */
   get signature() {
@@ -100,6 +95,7 @@ export class User implements IUser {
       active: this.active,
       email: this.email,
       hash: this.hash,
+      id: this.id,
       org: this.org,
       policy: this.policy,
       srn: this.srn,
@@ -121,6 +117,7 @@ export class User implements IUser {
     return {
       active: this.active,
       email: this.email,
+      id: this.id,
       org: this.org,
       password: this.password,
       policy: this.policy.toObject(),

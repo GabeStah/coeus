@@ -1,10 +1,9 @@
-import { test } from 'tap';
-import { build } from 'src/app';
-import { User } from 'src/models/User';
-import { Utility } from 'src/helpers/Utility';
-import { UserService } from 'src/services/UserService';
-import config from 'config';
-import { UserTestHelper } from 'src/helpers/Test';
+import { test } from "tap";
+import { build } from "src/app";
+import { User } from "src/models/User";
+import { Utility } from "src/helpers/Utility";
+import config from "config";
+import { TestHelper, UserTestHelper } from "src/helpers/Test";
 
 test('routes/data/find', async t => {
   const app = build();
@@ -54,7 +53,7 @@ test('routes/data/find', async t => {
   });
 
   await t.test(`GET ${route}`, async t => {
-    const response = await app.inject({
+    const response = await TestHelper.inject(app, {
       method: 'GET',
       url: route,
       headers: {
@@ -65,7 +64,7 @@ test('routes/data/find', async t => {
   });
 
   await t.test(`POST ${route} without body fails`, async t => {
-    const response = await app.inject({
+    const response = await TestHelper.inject(app, {
       method: 'POST',
       url: route,
       headers: {
@@ -76,7 +75,7 @@ test('routes/data/find', async t => {
   });
 
   await t.test(`POST ${route} with empty body`, async t => {
-    const response = await app.inject({
+    const response = await TestHelper.inject(app, {
       method: 'POST',
       url: route,
       headers: {
@@ -92,7 +91,7 @@ test('routes/data/find', async t => {
   });
 
   await t.test(`POST ${route} with body missing collection`, async t => {
-    const response = await app.inject({
+    const response = await TestHelper.inject(app, {
       method: 'POST',
       url: route,
       headers: {
@@ -110,7 +109,7 @@ test('routes/data/find', async t => {
   });
 
   await t.test(`POST ${route} with empty properties`, async t => {
-    const response = await app.inject({
+    const response = await TestHelper.inject(app, {
       method: 'POST',
       url: route,
       headers: {
@@ -129,7 +128,7 @@ test('routes/data/find', async t => {
   });
 
   await t.test(`POST ${route} with collection and db success`, async t => {
-    const response = await app.inject({
+    const response = await TestHelper.inject(app, {
       method: 'POST',
       url: route,
       headers: {
@@ -144,7 +143,7 @@ test('routes/data/find', async t => {
   });
 
   await t.test(`POST ${route} with collection, db, query success`, async t => {
-    const response = await app.inject({
+    const response = await TestHelper.inject(app, {
       method: 'POST',
       url: route,
       headers: {
@@ -160,7 +159,7 @@ test('routes/data/find', async t => {
   });
 
   await t.test(`POST ${route} with limit under minimum`, async t => {
-    const response = await app.inject({
+    const response = await TestHelper.inject(app, {
       method: 'POST',
       url: route,
       headers: {
@@ -178,7 +177,7 @@ test('routes/data/find', async t => {
   });
 
   await t.test(`POST ${route} with full text search query`, async t => {
-    const response = await app.inject({
+    const response = await TestHelper.inject(app, {
       method: 'POST',
       url: route,
       headers: {
@@ -201,7 +200,7 @@ test('routes/data/find', async t => {
   });
 
   await t.test(`POST ${route} without limit`, async t => {
-    const response = await app.inject({
+    const response = await TestHelper.inject(app, {
       method: 'POST',
       url: route,
       headers: {
@@ -226,7 +225,7 @@ test('routes/data/find', async t => {
   });
 
   t.tearDown(async () => {
-    await new UserService(app).delete(userInstance);
+    await UserTestHelper.delete({ app, user: userInstance });
     return app.close();
   });
   t.end();

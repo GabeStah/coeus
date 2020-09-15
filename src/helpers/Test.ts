@@ -7,6 +7,25 @@ import {
   DataServiceInsertParams,
   DataServiceParams
 } from 'src/services/DataService';
+import {
+  InjectOptions,
+  Response as LightMyRequestResponse
+} from 'light-my-request';
+
+export const TestHelper = {
+  inject: async (
+    app: FastifyInstance,
+    opts: InjectOptions
+  ): Promise<LightMyRequestResponse> => {
+    const headersOverrides = { 'x-source-type': 'test' };
+    if (opts.headers) {
+      opts.headers = Object.assign(opts.headers, headersOverrides);
+    } else {
+      opts.headers = headersOverrides;
+    }
+    return app.inject(opts);
+  }
+};
 
 export const DataTestHelper = {
   insert: async ({
@@ -56,16 +75,21 @@ export const UserTestHelper = {
 
     if (!existingUser) {
       await new UserService(app).create(user);
+      // Update hash map
+      await app.updateUserHashMap();
     }
   },
   delete: async ({ app, user }: { app: FastifyInstance; user: User }) => {
-    return new UserService(app).delete(user);
+    const result = new UserService(app).delete(user);
+    // Update hash map
+    await app.updateUserHashMap();
+    return result;
   },
-  // find: async ({ app, user }: { app: FastifyInstance; user: User }) => {
-  //   return new UserService(app).find({ query: { username: user.username } });
-  // },
+  find: async ({ app, user }: { app: FastifyInstance; user: User }) => {
+    return new UserService(app).find({ query: { username: user.username } });
+  },
   login: async ({ app, user }: { app: FastifyInstance; user: User }) => {
-    const loginResponse = await app.inject({
+    const loginResponse = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.login']),
       payload: {

@@ -2,58 +2,15 @@ import { test } from 'tap';
 import { build } from 'src/app';
 import { User } from 'src/models/User';
 import { Utility } from 'src/helpers/Utility';
-import { UserTestHelper } from 'src/helpers/Test';
+import { TestHelper, UserTestHelper } from 'src/helpers/Test';
 import faker from 'faker';
+import { UserService } from 'src/services/UserService';
+import { ObjectID } from 'mongodb';
 
 test('AuthorizationService', async t => {
   const app = build();
   // Await plugin / decorated injection
   await app.ready();
-
-  await t.test(`can register`, async t => {
-    const user = User.fake();
-
-    const response = await app.inject({
-      method: 'POST',
-      url: Utility.route(['user.prefix', 'user.register']),
-      payload: user.toObject()
-    });
-
-    t.strictEqual(response.statusCode, 200);
-    t.strictEqual(response.statusMessage, 'OK');
-    t.equivalent(response.json().message, 'User successfully created.');
-
-    await UserTestHelper.delete({ app, user });
-  });
-
-  await t.test(`cannot register with duplicate username`, async t => {
-    const userA = User.fake();
-    const userB = User.fake({ username: userA.username });
-
-    const responseA = await app.inject({
-      method: 'POST',
-      url: Utility.route(['user.prefix', 'user.register']),
-      payload: userA.toObject()
-    });
-
-    t.strictEqual(responseA.statusCode, 200);
-    t.strictEqual(responseA.statusMessage, 'OK');
-    t.equivalent(responseA.json().message, 'User successfully created.');
-
-    const responseB = await app.inject({
-      method: 'POST',
-      url: Utility.route(['user.prefix', 'user.register']),
-      payload: userB.toObject()
-    });
-
-    t.equivalent(responseB.json(), {
-      statusCode: 409,
-      error: 'Conflict',
-      message: `Unable to create new user: ${userA.username}`
-    });
-
-    await UserTestHelper.delete({ app, user: userA });
-  });
 
   await t.test(`cannot delete not-existent user`, async t => {
     const user = User.fake();
@@ -65,7 +22,7 @@ test('AuthorizationService', async t => {
   await t.test(`can login`, async t => {
     const user = User.fake();
 
-    const responseRegister = await app.inject({
+    const responseRegister = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.register']),
       payload: user.toObject()
@@ -75,7 +32,7 @@ test('AuthorizationService', async t => {
     t.strictEqual(responseRegister.statusMessage, 'OK');
     t.equivalent(responseRegister.json().message, 'User successfully created.');
 
-    const loginResponse = await app.inject({
+    const loginResponse = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.login']),
       payload: {
@@ -94,7 +51,7 @@ test('AuthorizationService', async t => {
   await t.test(`login with invalid username`, async t => {
     const user = User.fake();
 
-    const responseRegister = await app.inject({
+    const responseRegister = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.register']),
       payload: user.toObject()
@@ -104,7 +61,7 @@ test('AuthorizationService', async t => {
     t.strictEqual(responseRegister.statusMessage, 'OK');
     t.equivalent(responseRegister.json().message, 'User successfully created.');
 
-    const loginResponse = await app.inject({
+    const loginResponse = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.login']),
       payload: {
@@ -113,8 +70,6 @@ test('AuthorizationService', async t => {
       }
     });
 
-    // t.strictEqual(loginResponse.statusCode, 401);
-    // t.strictEqual(loginResponse.statusMessage, 'Unauthorized');
     t.equivalent(loginResponse.json(), {
       statusCode: 401,
       error: 'Unauthorized',
@@ -127,7 +82,7 @@ test('AuthorizationService', async t => {
   await t.test(`login with invalid password`, async t => {
     const user = User.fake();
 
-    const responseRegister = await app.inject({
+    const responseRegister = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.register']),
       payload: user.toObject()
@@ -137,7 +92,7 @@ test('AuthorizationService', async t => {
     t.strictEqual(responseRegister.statusMessage, 'OK');
     t.equivalent(responseRegister.json().message, 'User successfully created.');
 
-    const loginResponse = await app.inject({
+    const loginResponse = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.login']),
       payload: {
@@ -146,12 +101,166 @@ test('AuthorizationService', async t => {
       }
     });
 
-    // t.strictEqual(loginResponse.statusCode, 401);
-    // t.strictEqual(loginResponse.statusMessage, 'Unauthorized');
     t.equivalent(loginResponse.json(), {
       statusCode: 401,
       error: 'Unauthorized',
       message: 'Unable to authenticate with provided credentials.'
+    });
+
+    await UserTestHelper.delete({ app, user });
+  });
+
+  await t.test(`user updatable`, async t => {
+    const user = User.fake();
+
+    const responseRegister = await TestHelper.inject(app, {
+      method: 'POST',
+      url: Utility.route(['user.prefix', 'user.register']),
+      payload: user.toObject()
+    });
+
+    t.strictEqual(responseRegister.statusCode, 200);
+    t.strictEqual(responseRegister.statusMessage, 'OK');
+    t.equivalent(responseRegister.json().message, 'User successfully created.');
+
+    const foundUsers = await new UserService(app).find({
+      query: { username: user.username }
+    });
+
+    const foundUser = foundUsers[0];
+
+    const updateResponse = await new UserService(app).update({
+      filter: { _id: new ObjectID(foundUser.id) },
+      update: { $set: { org: 'other' } }
+    });
+
+    t.equivalent(updateResponse, {
+      statusCode: 200,
+      message: 'User updated'
+    });
+
+    await UserTestHelper.delete({ app, user });
+  });
+
+  await t.test(`update by id`, async t => {
+    const user = User.fake();
+
+    const responseRegister = await TestHelper.inject(app, {
+      method: 'POST',
+      url: Utility.route(['user.prefix', 'user.register']),
+      payload: user.toObject()
+    });
+
+    t.strictEqual(responseRegister.statusCode, 200);
+    t.strictEqual(responseRegister.statusMessage, 'OK');
+    t.equivalent(responseRegister.json().message, 'User successfully created.');
+
+    const foundUsers = await new UserService(app).find({
+      query: { username: user.username }
+    });
+
+    const foundUser = foundUsers[0];
+
+    const updateResponse = await new UserService(app).updateById(foundUser.id, {
+      update: { $set: { org: 'other' } }
+    });
+
+    t.equivalent(updateResponse, {
+      statusCode: 200,
+      message: 'User updated'
+    });
+
+    await UserTestHelper.delete({ app, user });
+  });
+
+  await t.test(`can verify valid user`, async t => {
+    const user = User.fake();
+
+    const responseRegister = await TestHelper.inject(app, {
+      method: 'POST',
+      url: Utility.route(['user.prefix', 'user.register']),
+      payload: user.toObject()
+    });
+
+    t.strictEqual(responseRegister.statusCode, 200);
+    t.strictEqual(responseRegister.statusMessage, 'OK');
+    t.equivalent(responseRegister.json().message, 'User successfully created.');
+
+    const foundUsers = await new UserService(app).find({
+      query: { username: user.username }
+    });
+
+    const foundUser = foundUsers[0];
+
+    const responseVerify = await TestHelper.inject(app, {
+      method: 'GET',
+      url: Utility.route(['user.prefix', 'user.verify']),
+      query: {
+        token: foundUser.verificationToken.value
+      }
+    });
+
+    t.equivalent(responseVerify.json(), {
+      statusCode: 200,
+      message: 'User successfully verified.'
+    });
+
+    await UserTestHelper.delete({ app, user });
+  });
+
+  await t.test(`cannot verify with invalid token`, async t => {
+    const response = await TestHelper.inject(app, {
+      method: 'GET',
+      url: Utility.route(['user.prefix', 'user.verify']),
+      query: {
+        token: 'a'.repeat(60)
+      }
+    });
+
+    t.equivalent(response.json(), {
+      statusCode: 401,
+      error: 'Unauthorized',
+      message: 'Verification token is invalid.'
+    });
+  });
+
+  await t.test(`cannot verify with expired token`, async t => {
+    const user = User.fake();
+
+    const responseRegister = await TestHelper.inject(app, {
+      method: 'POST',
+      url: Utility.route(['user.prefix', 'user.register']),
+      payload: user.toObject()
+    });
+
+    t.strictEqual(responseRegister.statusCode, 200);
+    t.strictEqual(responseRegister.statusMessage, 'OK');
+    t.equivalent(responseRegister.json().message, 'User successfully created.');
+
+    const foundUsers = await new UserService(app).find({
+      query: { username: user.username }
+    });
+
+    const foundUser = foundUsers[0];
+
+    await new UserService(app).updateById(foundUser.id, {
+      update: {
+        $set: { 'verificationToken.expiresAt': Date.now() - 1000 }
+      }
+    });
+
+    const responseVerify = await TestHelper.inject(app, {
+      method: 'GET',
+      url: Utility.route(['user.prefix', 'user.verify']),
+      query: {
+        token: foundUser.verificationToken.value
+      }
+    });
+
+    t.equivalent(responseVerify.json(), {
+      statusCode: 401,
+      error: 'Unauthorized',
+      message: 'Verification token has expired.'
     });
 
     await UserTestHelper.delete({ app, user });

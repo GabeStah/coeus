@@ -10,6 +10,10 @@ import fp from 'fastify-plugin';
 import fastifyJwt from 'fastify-jwt';
 import config from 'config';
 import { User } from 'src/models/User';
+import { UserService } from 'src/services/UserService';
+import HttpError from 'http-errors';
+
+export type UserHashMap = { [key: string]: string };
 
 const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   if (!config.get('security.jwt.secret')) {
@@ -27,10 +31,25 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
     }
   });
 
-  // TODO: Get all coeus.users data
-  // Create in-memory map between user._id and user.hash
-  // Within verifyJwt() method lookup user._id in memory.
-  // If _id exists and hashes match, allow request, else deny
+  instance.decorate('userHashMap', {});
+
+  /**
+   * Update user hash map from db
+   */
+  instance.decorate('updateUserHashMap', async () => {
+    const result = await new UserService(instance).find({ query: {} });
+    let userHashMap: UserHashMap = {};
+    for (const user of result) {
+      userHashMap[user.id] = user.hash;
+    }
+    instance.userHashMap = userHashMap;
+  });
+
+  instance.addHook('onReady', async done => {
+    // Load initial user hash map on app init
+    await instance.updateUserHashMap();
+    done();
+  });
 
   // Add JWT verification method to instance
   instance.decorate('verifyJwt', async function(
@@ -38,6 +57,19 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
     reply: FastifyReply
   ) {
     request.payload = <Partial<User>>await request.jwtVerify();
+
+    if (
+      !request.payload.id ||
+      !request.payload.hash ||
+      !instance.userHashMap.hasOwnProperty(request.payload.id) ||
+      instance.userHashMap[request.payload.id] !== request.payload.hash
+    ) {
+      // If request has no id or hash, if cache hashmap has no matching id,
+      // or if hashmap does not match then deny request
+      throw new HttpError.Unauthorized(
+        'Authorization token is out of date. Please obtain a new token and try again.'
+      );
+    }
 
     return;
   });

@@ -1,9 +1,8 @@
-import { test } from 'tap';
-import { build } from 'src/app';
-import { User } from 'src/models/User';
-import { Utility } from 'src/helpers/Utility';
-import { UserService } from 'src/services/UserService';
-import { DataTestHelper, UserTestHelper } from 'src/helpers/Test';
+import { test } from "tap";
+import { build } from "src/app";
+import { User } from "src/models/User";
+import { Utility } from "src/helpers/Utility";
+import { DataTestHelper, TestHelper, UserTestHelper } from "src/helpers/Test";
 
 test('routes/data/update', async t => {
   const app = build();
@@ -47,7 +46,8 @@ test('routes/data/update', async t => {
   await UserTestHelper.create({ app, user: userInstance });
 
   const getRequestResponse = async (params?: any) => {
-    return app.inject(
+    return TestHelper.inject(
+      app,
       Object.assign(
         {
           method: 'POST',
@@ -282,7 +282,7 @@ test('routes/data/update', async t => {
   );
 
   t.tearDown(async () => {
-    await new UserService(app).delete(userInstance);
+    await UserTestHelper.delete({ app, user: userInstance });
     return app.close();
   });
   t.end();

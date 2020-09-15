@@ -1,10 +1,11 @@
 import { test } from 'tap';
 import { build } from 'src/app';
+import { TestHelper } from 'src/helpers/Test';
 
 test('requests the "/status" route', async t => {
   const app = build();
 
-  const response = await app.inject({
+  const response = await TestHelper.inject(app, {
     method: 'GET',
     url: '/status'
   });

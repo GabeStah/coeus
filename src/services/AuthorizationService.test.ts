@@ -2,7 +2,7 @@ import { test } from 'tap';
 import { build } from 'src/app';
 import { User } from 'src/models/User';
 import { Utility } from 'src/helpers/Utility';
-import { UserTestHelper } from 'src/helpers/Test';
+import { TestHelper, UserTestHelper } from 'src/helpers/Test';
 
 test('AuthorizationService', async t => {
   const app = build();
@@ -19,7 +19,7 @@ test('AuthorizationService', async t => {
       user
     });
 
-    const response = await app.inject({
+    const response = await TestHelper.inject(app, {
       method: 'POST',
       url: route,
       headers: {
@@ -61,7 +61,7 @@ test('AuthorizationService', async t => {
         user
       });
 
-      const response = await app.inject({
+      const response = await TestHelper.inject(app, {
         method: 'POST',
         url: route,
         headers: {
@@ -101,7 +101,7 @@ test('AuthorizationService', async t => {
       user
     });
 
-    const response = await app.inject({
+    const response = await TestHelper.inject(app, {
       method: 'POST',
       url: route,
       headers: {
@@ -137,7 +137,7 @@ test('AuthorizationService', async t => {
       user
     });
 
-    const response = await app.inject({
+    const response = await TestHelper.inject(app, {
       method: 'POST',
       url: route,
       headers: {
@@ -177,7 +177,7 @@ test('AuthorizationService', async t => {
       user
     });
 
-    const response = await app.inject({
+    const response = await TestHelper.inject(app, {
       method: 'POST',
       url: route,
       headers: {
@@ -199,7 +199,6 @@ test('AuthorizationService', async t => {
   });
 
   t.tearDown(async () => {
-    // await new UserService(app).delete(userInstance);
     return app.close();
   });
   t.end();
