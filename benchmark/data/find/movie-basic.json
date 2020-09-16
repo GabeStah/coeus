@@ -1,0 +1,6 @@
+{
+  "collection": "users",
+  "db": "sample_mflix",
+  "query": {},
+  "limit": 5
+}

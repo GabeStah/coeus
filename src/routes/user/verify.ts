@@ -7,12 +7,12 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.route<{
     Querystring: UserServiceVerifyParams;
   }>({
-    handler: async (request, reply) => {
-      return new UserService(instance).verify({
+    handler: async (request, reply) =>
+      new UserService(instance).verify({
         token: request.query.token
-      });
-    },
+      }),
     method: 'GET',
+    onResponse: [instance.updateUserHashMap],
     schema: {
       querystring: {
         token: {

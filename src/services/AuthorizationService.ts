@@ -25,7 +25,9 @@ export abstract class AuthorizationService {
 
   protected constructor({ payload, service }: AuthorizationServiceParams) {
     this.service = service;
-    this.user = new User(payload);
+    if (payload) {
+      this.user = new User(payload);
+    }
   }
 
   /**
@@ -68,7 +70,8 @@ export abstract class AuthorizationService {
 
       if (
         matchesServiceMethod &&
-        statement.allow !== null && statement.allow !== undefined &&
+        statement.allow !== null &&
+        statement.allow !== undefined &&
         !!statement.allow === false
       ) {
         // Deny if 'allow' property is defined and falsy

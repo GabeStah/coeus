@@ -1,7 +1,7 @@
-import { Policy } from "src/models/Policy";
-import faker from "faker";
-import { Utility } from "src/helpers/Utility";
-import { ObjectID } from "mongodb";
+import { Policy } from 'src/models/Policy';
+import faker from 'faker';
+import { Utility } from 'src/helpers/Utility';
+import { ObjectID } from 'mongodb';
 
 interface IUserVerificationToken {
   expiresAt: number;

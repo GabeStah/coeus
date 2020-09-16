@@ -74,9 +74,10 @@ export const UserTestHelper = {
     });
 
     if (!existingUser) {
-      await new UserService(app).create(user);
+      const createdUser = await new UserService(app).create(user);
       // Update hash map
       await app.updateUserHashMap();
+      return createdUser;
     }
   },
   delete: async ({ app, user }: { app: FastifyInstance; user: User }) => {

@@ -1,0 +1,10 @@
+{
+  "collection": "movies",
+  "db": "sample_mflix",
+  "query": {
+    "$text": {
+      "$search": "Superman"
+    }
+  },
+  "limit": 5
+}

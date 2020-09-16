@@ -36,7 +36,7 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   /**
    * Update user hash map from db
    */
-  instance.decorate('updateUserHashMap', async () => {
+  instance.decorate('updateUserHashMap', async function() {
     const result = await new UserService(instance).find({ query: {} });
     let userHashMap: UserHashMap = {};
     for (const user of result) {

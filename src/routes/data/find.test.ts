@@ -1,9 +1,9 @@
-import { test } from "tap";
-import { build } from "src/app";
-import { User } from "src/models/User";
-import { Utility } from "src/helpers/Utility";
-import config from "config";
-import { TestHelper, UserTestHelper } from "src/helpers/Test";
+import { test } from 'tap';
+import { build } from 'src/app';
+import { User } from 'src/models/User';
+import { Utility } from 'src/helpers/Utility';
+import config from 'config';
+import { TestHelper, UserTestHelper } from 'src/helpers/Test';
 
 test('routes/data/find', async t => {
   const app = build();

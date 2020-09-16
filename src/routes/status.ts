@@ -18,5 +18,5 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
 export default fp(plugin, {
   fastify: '3.3.x',
-  name: 'route:status'
+  name: 'routes/status'
 });

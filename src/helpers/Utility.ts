@@ -1,8 +1,8 @@
-import bcrypt from "bcryptjs";
-import config from "config";
-import hash from "object-hash";
-import crypto from "crypto";
-import { FastifyRequest } from "fastify";
+import bcrypt from 'bcryptjs';
+import config from 'config';
+import hash from 'object-hash';
+import crypto from 'crypto';
+import { FastifyRequest } from 'fastify';
 
 /**
  * Utility helper class.

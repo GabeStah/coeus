@@ -4,6 +4,12 @@
     - [Dynamic Watches](#dynamic-watches)
   - [Testing](#testing)
     - [Coverage](#coverage)
+  - [Benchmarks](#benchmarks)
+    - [Status](#status)
+    - [Unauthorized Request](#unauthorized-request)
+    - [Basic Data Retrieval](#basic-data-retrieval)
+    - [Full Text Search](#full-text-search)
+      - [Conclusion](#conclusion)
   - [Database: MongoDB](#database-mongodb)
     - [Naming Conventions](#naming-conventions)
     - [Databases](#databases)
@@ -66,10 +72,14 @@
     - [Request Option: idempotence_id](#request-option-idempotence_id)
     - [Request Option: format](#request-option-format)
     - [Request Option: email](#request-option-email)
+    - [Benchmarking](#benchmarking)
+    - [Rate Limiting](#rate-limiting)
+    - [PolicyStatement Property: rateLimit](#policystatement-property-ratelimit)
     - [PolicyStatement Property: ip](#policystatement-property-ip)
     - [PolicyStatement Property: hostname](#policystatement-property-hostname)
     - [/user/explain Endpoint](#userexplain-endpoint)
     - [API Documentation Generator](#api-documentation-generator)
+    - [Commit Release Update](#commit-release-update)
 
 # Coeus
 
@@ -139,6 +149,108 @@ $ curl -X POST "localhost:8000/status"
 | 100%              | 1/1   | 100%     | 0/0   | 100%      | 0/0   | 100%  | 1/1   |
 | src/services      |       |          |       |           |       |       |       |
 | 100%              | 70/70 | 100%     | 35/35 | 100%      | 14/14 | 100%  | 70/70 |
+
+## Benchmarks
+
+### Status
+
+- Command: `autocannon -c 100 -d 20 -p 10 -m POST localhost:8000/status`
+- Purpose: Determine maximum app response rate
+- Result: `19500 req/sec` average, `14500 req/sec` minimum, `5 ms` average latency
+
+```
+┌─────────┬──────┬──────┬───────┬───────┬─────────┬──────────┬────────┐
+│ Stat    │ 2.5% │ 50%  │ 97.5% │ 99%   │ Avg     │ Stdev    │ Max    │
+├─────────┼──────┼──────┼───────┼───────┼─────────┼──────────┼────────┤
+│ Latency │ 0 ms │ 0 ms │ 53 ms │ 61 ms │ 5.05 ms │ 15.63 ms │ 232 ms │
+└─────────┴──────┴──────┴───────┴───────┴─────────┴──────────┴────────┘
+┌───────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┐
+│ Stat      │ 1%      │ 2.5%    │ 50%     │ 97.5%   │ Avg     │ Stdev   │ Min     │
+├───────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
+│ Req/Sec   │ 14447   │ 14447   │ 19535   │ 21727   │ 19482   │ 1968.22 │ 14443   │
+├───────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
+│ Bytes/Sec │ 2.83 MB │ 2.83 MB │ 3.83 MB │ 4.26 MB │ 3.82 MB │ 386 kB  │ 2.83 MB │
+└───────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+```
+
+### Unauthorized Request
+
+- Command: `autocannon -c 100 -d 20 -p 10 -m POST localhost:8000/data/find`
+- Purpose: Test speed for processed, unauthorized requests (i.e. invalid JWT)
+- Result: `8500 req/sec` average, `7500 req/sec` minimum, `11.5 ms` average latency
+
+```
+┌─────────┬──────┬──────┬────────┬────────┬──────────┬──────────┬────────┐
+│ Stat    │ 2.5% │ 50%  │ 97.5%  │ 99%    │ Avg      │ Stdev    │ Max    │
+├─────────┼──────┼──────┼────────┼────────┼──────────┼──────────┼────────┤
+│ Latency │ 0 ms │ 0 ms │ 119 ms │ 134 ms │ 11.65 ms │ 35.15 ms │ 252 ms │
+└─────────┴──────┴──────┴────────┴────────┴──────────┴──────────┴────────┘
+┌───────────┬─────────┬─────────┬─────────┬─────────┬─────────┬────────┬─────────┐
+│ Stat      │ 1%      │ 2.5%    │ 50%     │ 97.5%   │ Avg     │ Stdev  │ Min     │
+├───────────┼─────────┼─────────┼─────────┼─────────┼─────────┼────────┼─────────┤
+│ Req/Sec   │ 7531    │ 7531    │ 8703    │ 9047    │ 8507.5  │ 481.77 │ 7530    │
+├───────────┼─────────┼─────────┼─────────┼─────────┼─────────┼────────┼─────────┤
+│ Bytes/Sec │ 1.93 MB │ 1.93 MB │ 2.23 MB │ 2.32 MB │ 2.18 MB │ 123 kB │ 1.93 MB │
+└───────────┴─────────┴─────────┴─────────┴─────────┴─────────┴────────┴─────────┘
+```
+
+### Basic Data Retrieval
+
+- Command:
+
+```bash
+$ autocannon -c 100 -d 20 -p 10 -m POST -H 'Authorization: Bearer <JWT>' -H 'Content-Type: application/json' -i benchmark/data/find/movie-basic.json localhost:8000/data/find
+```
+
+- Purpose: Test full authorization, database lookup, and retrieval
+- Result: `760 req/sec` average, `600 req/sec` minimum, `125 ms` average latency
+
+```
+┌─────────┬──────┬──────┬─────────┬─────────┬───────────┬───────────┬─────────┐
+│ Stat    │ 2.5% │ 50%  │ 97.5%   │ 99%     │ Avg       │ Stdev     │ Max     │
+├─────────┼──────┼──────┼─────────┼─────────┼───────────┼───────────┼─────────┤
+│ Latency │ 0 ms │ 1 ms │ 1284 ms │ 1305 ms │ 126.92 ms │ 378.76 ms │ 1538 ms │
+└─────────┴──────┴──────┴─────────┴─────────┴───────────┴───────────┴─────────┘
+┌───────────┬────────┬────────┬────────┬────────┬────────┬─────────┬────────┐
+│ Stat      │ 1%     │ 2.5%   │ 50%    │ 97.5%  │ Avg    │ Stdev   │ Min    │
+├───────────┼────────┼────────┼────────┼────────┼────────┼─────────┼────────┤
+│ Req/Sec   │ 591    │ 591    │ 778    │ 788    │ 761.4  │ 45.07   │ 591    │
+├───────────┼────────┼────────┼────────┼────────┼────────┼─────────┼────────┤
+│ Bytes/Sec │ 596 kB │ 596 kB │ 785 kB │ 795 kB │ 768 kB │ 45.5 kB │ 596 kB │
+└───────────┴────────┴────────┴────────┴────────┴────────┴─────────┴────────┘
+```
+
+### Full Text Search
+
+- Command:
+
+```bash
+$ autocannon -c 100 -d 20 -p 10 -m POST -H 'Authorization=Bearer <JWT>' -H 'Content-Type: application/json' -i benchmark/data/find/movie-full-text-search.json localhost:8000/data/find
+```
+
+- Purpose: Test full text search with reasonable payload size (`8.5MB`)
+- Result: `660 req/sec` average, `530 req/sec` minimum, `145 ms` average latency
+
+```
+┌─────────┬──────┬──────┬─────────┬─────────┬───────────┬───────────┬─────────┐
+│ Stat    │ 2.5% │ 50%  │ 97.5%   │ 99%     │ Avg       │ Stdev     │ Max     │
+├─────────┼──────┼──────┼─────────┼─────────┼───────────┼───────────┼─────────┤
+│ Latency │ 0 ms │ 1 ms │ 1484 ms │ 1497 ms │ 145.07 ms │ 434.79 ms │ 1690 ms │
+└─────────┴──────┴──────┴─────────┴─────────┴───────────┴───────────┴─────────┘
+┌───────────┬─────────┬─────────┬─────────┬─────────┬─────────┬────────┬─────────┐
+│ Stat      │ 1%      │ 2.5%    │ 50%     │ 97.5%   │ Avg     │ Stdev  │ Min     │
+├───────────┼─────────┼─────────┼─────────┼─────────┼─────────┼────────┼─────────┤
+│ Req/Sec   │ 531     │ 531     │ 670     │ 681     │ 662.9   │ 30.89  │ 531     │
+├───────────┼─────────┼─────────┼─────────┼─────────┼─────────┼────────┼─────────┤
+│ Bytes/Sec │ 6.97 MB │ 6.97 MB │ 8.79 MB │ 8.94 MB │ 8.69 MB │ 405 kB │ 6.96 MB │
+└───────────┴─────────┴─────────┴─────────┴─────────┴─────────┴────────┴─────────┘
+```
+
+#### Conclusion
+
+Caveat: These tests are based on my own local machine.
+
+If results are similar in production, a target maximum of `500 req/sec` across the app should be sufficient and maintainable.
 
 ## Database: MongoDB
 
@@ -422,7 +534,9 @@ $ curl --location --request POST 'http://localhost:8000/data/find' \
 
 #### User Hash Map Cache
 
-**Problem**: The content of the JWT payload is trustworthy and authenticates the defined User along with their appropriate Policy permissions. However, business requirements strongly discourage reliance on JWT expiration dates, since this would require third-party services relying on Coeus to re-authenticate and setup a new JWT `Authorization` token after ever JWT expiration. Beyond that, when an Admin has need to disable a User or rotate a given JWT the app needs a method for determining the validity of an existing JWT. Making a database call on every request to verify the incoming request against the `coeus.users` collection is infeasible and costly.
+The content of the JWT payload is trustworthy and authenticates the defined User along with their appropriate Policy permissions.
+
+**Problem**: Business requirements strongly discourage reliance on JWT expiration dates, since this would require third-party services relying on Coeus to re-authenticate and setup a new JWT `Authorization` token after every JWT expiration. Beyond that, when an Admin needs to disable a User or rotate a given JWT the app needs a method for determining the validity of an existing JWT. Making a database call on every request to verify the incoming request against the `coeus.users` collection is infeasible and costly.
 
 **Solution**: Coeus maintains an in-memory hashmap of `coeus.users` data:
 
@@ -635,7 +749,7 @@ By default, Coeus limits the number of documents returned by a single request:
 
 - `20` - Default maximum number of documents retrieved if no `limit` specified. Configurable via the `config.db.thresholds.limit.base` path.
 - `1` - Minimum number of documents that can be retrieved. Configurable via the `config.db.thresholds.limit.minimum` path.
-- `100` - Maximum number of documents that can be retrieved. Configurable via the `config.db.thresholds.limit.minimum` path.
+- `100` - Maximum number of documents that can be retrieved. Configurable via the `config.db.thresholds.limit.maximum` path.
 
 ### Timeout
 
@@ -677,7 +791,7 @@ const schema = {
       minLength: 4,
       maxLength: 64,
       pattern: '^(?!coeus).+'
-    }
+    },
     limit: {
       type: ['number', 'null'],
       default: config.get('db.thresholds.limit.base'),
@@ -1035,14 +1149,15 @@ Generate `hash` when:
 
 ### /user/login Option: email
 
-- Email generated JWT token to user email address.
-- Send attachment
-- User must be `active` and `verified`.
+- [x] Email generated JWT token to user email address.
+- [x] User must be `active` and `verified`.
+- [x] Send attachment
 
 ### /user/activate Endpoint
 
-- Endpoint for activating specified User(s), so they can login, recieve JWT, and make requests.
-- Upon activation email User with JWT.
+- [x] Endpoint for activating specified User(s), so they can login, recieve JWT, and make requests.
+- [x] Upon activation email User with JWT.
+- [x] Send attachment
 
 ### Request Option: idempotence_id
 
@@ -1055,6 +1170,18 @@ Generate `hash` when:
 ### Request Option: email
 
 - Email address to send results to. Requires background worker system.
+
+### Benchmarking
+
+- [x] Determine basic route endpoint benchmarks/limitations to gauge proper rate limiting ranges
+
+### Rate Limiting
+
+- Set default rate limits, overridable within validated range by PolicyStatement
+
+### PolicyStatement Property: rateLimit
+
+- Override rate limiting for matching service/method requests
 
 ### PolicyStatement Property: ip
 
@@ -1071,3 +1198,9 @@ Generate `hash` when:
 ### API Documentation Generator
 
 - Swagger or similar tool?
+
+### Commit Release Update
+
+- https://github.com/conventional-changelog/conventional-changelog
+- https://github.com/conventional-changelog/standard-version
+- https://github.com/semantic-release/commit-analyzer#release-rules

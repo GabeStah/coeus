@@ -3,7 +3,7 @@ import fp from 'fastify-plugin';
 import { UserService, UserServiceCreateParams } from 'src/services/UserService';
 import { Utility } from 'src/helpers/Utility';
 import config from 'config';
-import { sendVerificationEmail } from 'src/helpers/Mail';
+import { sendOnVerificationEmail } from 'src/plugins/mail/generators';
 
 const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.route<{
@@ -17,9 +17,6 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
         username: request.body.username,
         policy: request.body.policy
       });
-
-      // Update hash map
-      await instance.updateUserHashMap();
 
       // Add user to context for hook handling
       instance.requestContext.set('user', user);
@@ -37,7 +34,7 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
         }
       };
     },
-    onResponse: [sendVerificationEmail],
+    onResponse: [instance.updateUserHashMap, sendOnVerificationEmail],
     method: 'POST',
     schema: {
       body: {

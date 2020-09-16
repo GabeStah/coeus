@@ -1,8 +1,8 @@
-import { test } from "tap";
-import { build } from "src/app";
-import { User } from "src/models/User";
-import { Utility } from "src/helpers/Utility";
-import { DataTestHelper, TestHelper, UserTestHelper } from "src/helpers/Test";
+import { test } from 'tap';
+import { build } from 'src/app';
+import { User } from 'src/models/User';
+import { Utility } from 'src/helpers/Utility';
+import { DataTestHelper, TestHelper, UserTestHelper } from 'src/helpers/Test';
 
 test('routes/data/delete', async t => {
   const app = build();

@@ -1,11 +1,14 @@
 import { FastifyInstance } from 'fastify';
 import config from 'config';
 import { Utility } from 'src/helpers/Utility';
-import { IUser, User } from 'src/models/User';
+import { User } from 'src/models/User';
 import { IPolicy } from 'src/models/Policy';
 import HttpError from 'http-errors';
-import { ObjectID, UpdateManyOptions, UpdateOneOptions } from 'mongodb';
-import { DataServiceUpdateParams } from 'src/services/DataService';
+import { ObjectID, UpdateOneOptions } from 'mongodb';
+import {
+  AuthorizationPayloadType,
+  AuthorizationService
+} from 'src/services/AuthorizationService';
 
 export interface IPrivilege {
   actions: Array<string> | string;
@@ -13,6 +16,16 @@ export interface IPrivilege {
     collection?: string;
     db: string;
   };
+}
+
+export interface UserServiceParams {
+  payload?: AuthorizationPayloadType;
+}
+
+export interface UserServiceActivateParams {
+  id?: string;
+  srn?: string;
+  username?: string;
 }
 
 export interface UserServiceCreateParams {
@@ -31,6 +44,7 @@ export interface UserServiceFindParams {
 }
 
 export interface UserServiceLoginParams {
+  email?: boolean;
   password: string;
   username: string;
 }
@@ -38,17 +52,6 @@ export interface UserServiceLoginParams {
 export interface UserServiceVerifyParams {
   token: string;
 }
-
-// export interface UserServiceUpdateParams {
-//   active?: boolean;
-//   email?: string;
-//   _id: ObjectID | string;
-//   org?: string;
-//   password?: string;
-//   username?: string;
-//   policy?: IPolicy;
-//   verified?: boolean;
-// }
 
 export interface UserServiceUpdateParams {
   filter: object;
@@ -64,15 +67,62 @@ export interface UserServiceUpdateByIdParams {
 /**
  * User service.
  */
-export class UserService {
+export class UserService extends AuthorizationService {
   private instance: FastifyInstance;
-  private db: string;
-  private collection: string;
+  private readonly db: string;
+  private readonly collection: string;
 
-  constructor(instance: FastifyInstance) {
-    this.instance = instance;
+  constructor(instance: FastifyInstance, params?: UserServiceParams) {
+    let { payload } = params || {};
+    super({ payload, service: 'user' });
     this.db = 'coeus';
     this.collection = 'users';
+    this.instance = instance;
+  }
+
+  /**
+   * Activate User.
+   *
+   * @param user
+   */
+  public async activate({
+    id,
+    srn,
+    username
+  }: UserServiceActivateParams): Promise<User> {
+    this.authorize({
+      collection: this.collection,
+      db: this.db,
+      method: 'activate'
+    });
+
+    // Find by id, else srn, else username
+    let user = await this.exists(
+      id ? { _id: new ObjectID(id) } : srn ? { srn } : { username }
+    );
+
+    // Error if no user
+    if (!user) {
+      throw new HttpError.BadRequest(
+        `Could not find a user based on search params: ${JSON.stringify({
+          id,
+          srn,
+          username
+        })}`
+      );
+    }
+
+    const result = await this.instance.mongo.client
+      .db(this.db)
+      .collection(this.collection)
+      .updateOne({ _id: new ObjectID(user.id) }, { $set: { active: true } });
+
+    if (result.modifiedCount > 0) {
+      // Update local copy field without requiring new db query
+      user.active = true;
+    }
+
+    return user;
   }
 
   /**
@@ -100,6 +150,8 @@ export class UserService {
       value: Utility.generateToken()
     };
 
+    const srn = Utility.buildSrn({ org, username });
+
     const user = new User({
       active,
       email,
@@ -107,11 +159,10 @@ export class UserService {
       password,
       username,
       policy,
+      srn,
       verified,
       verificationToken
     });
-
-    const srn = Utility.buildSrn({ org, username });
 
     const result = await this.instance.mongo.client
       .db(this.db)
@@ -122,12 +173,14 @@ export class UserService {
         hash: user.toHash(),
         org,
         password: await Utility.hashPassword({ password }),
-        policy,
+        policy: user.policy.toObject(),
         srn,
         username,
         verified,
         verificationToken
       });
+
+    user._id = new ObjectID(result.insertedId);
 
     return user;
   }
