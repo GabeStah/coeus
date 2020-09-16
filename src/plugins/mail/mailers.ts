@@ -1,15 +1,9 @@
-import { FastifyInstance, FastifyPluginAsync } from 'fastify/fastify';
-import fp from 'fastify-plugin';
+import { FastifyInstance } from 'fastify';
 import nodemailer from 'nodemailer';
 import ses from 'aws-sdk/clients/ses';
 import config from 'config';
 
-/**
- * Mail plugin to handling outgoing messages.
- *
- * @param fastify
- */
-const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
+export async function mailers(fastify: FastifyInstance) {
   fastify.decorate(
     'mailer',
     nodemailer.createTransport({
@@ -36,9 +30,4 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       }
     })
   );
-};
-
-export default fp(plugin, {
-  fastify: '3.3.x',
-  name: 'mail'
-});
+}

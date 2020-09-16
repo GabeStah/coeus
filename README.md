@@ -154,7 +154,8 @@ $ curl -X POST "localhost:8000/status"
 
 ### Status
 
-- Command: `autocannon -c 100 -d 20 -p 10 -m POST localhost:8000/status`
+`$ autocannon -c 100 -d 20 -p 10 -m POST localhost:8000/status`
+
 - Purpose: Determine maximum app response rate
 - Result: `19500 req/sec` average, `14500 req/sec` minimum, `5 ms` average latency
 
@@ -175,7 +176,8 @@ $ curl -X POST "localhost:8000/status"
 
 ### Unauthorized Request
 
-- Command: `autocannon -c 100 -d 20 -p 10 -m POST localhost:8000/data/find`
+`$ autocannon -c 100 -d 20 -p 10 -m POST localhost:8000/data/find`
+
 - Purpose: Test speed for processed, unauthorized requests (i.e. invalid JWT)
 - Result: `8500 req/sec` average, `7500 req/sec` minimum, `11.5 ms` average latency
 
@@ -195,8 +197,6 @@ $ curl -X POST "localhost:8000/status"
 ```
 
 ### Basic Data Retrieval
-
-- Command:
 
 ```bash
 $ autocannon -c 100 -d 20 -p 10 -m POST -H 'Authorization: Bearer <JWT>' -H 'Content-Type: application/json' -i benchmark/data/find/movie-basic.json localhost:8000/data/find
@@ -221,8 +221,6 @@ $ autocannon -c 100 -d 20 -p 10 -m POST -H 'Authorization: Bearer <JWT>' -H 'Con
 ```
 
 ### Full Text Search
-
-- Command:
 
 ```bash
 $ autocannon -c 100 -d 20 -p 10 -m POST -H 'Authorization=Bearer <JWT>' -H 'Content-Type: application/json' -i benchmark/data/find/movie-full-text-search.json localhost:8000/data/find
