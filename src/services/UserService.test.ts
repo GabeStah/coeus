@@ -19,35 +19,6 @@ test('AuthorizationService', async t => {
     t.strictEqual(deleted, true);
   });
 
-  await t.test(`can login`, async t => {
-    const user = User.fake();
-
-    const responseRegister = await TestHelper.inject(app, {
-      method: 'POST',
-      url: Utility.route(['user.prefix', 'user.register']),
-      payload: user.toObject()
-    });
-
-    t.strictEqual(responseRegister.statusCode, 200);
-    t.strictEqual(responseRegister.statusMessage, 'OK');
-    t.equivalent(responseRegister.json().message, 'User successfully created.');
-
-    const loginResponse = await TestHelper.inject(app, {
-      method: 'POST',
-      url: Utility.route(['user.prefix', 'user.login']),
-      payload: {
-        username: user.username,
-        password: user.password
-      }
-    });
-
-    t.strictEqual(loginResponse.statusCode, 200);
-    t.strictEqual(loginResponse.statusMessage, 'OK');
-    t.type(loginResponse.json().token, 'string');
-
-    await UserTestHelper.delete({ app, user });
-  });
-
   await t.test(`login with invalid username`, async t => {
     const user = User.fake();
 
@@ -73,7 +44,7 @@ test('AuthorizationService', async t => {
     t.equivalent(loginResponse.json(), {
       statusCode: 401,
       error: 'Unauthorized',
-      message: 'Unable to authenticate with provided credentials.'
+      message: 'Unable to authenticate with the provided credentials.'
     });
 
     await UserTestHelper.delete({ app, user });
@@ -104,7 +75,7 @@ test('AuthorizationService', async t => {
     t.equivalent(loginResponse.json(), {
       statusCode: 401,
       error: 'Unauthorized',
-      message: 'Unable to authenticate with provided credentials.'
+      message: 'Unable to authenticate with the provided credentials.'
     });
 
     await UserTestHelper.delete({ app, user });

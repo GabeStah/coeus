@@ -158,46 +158,6 @@ test('AuthorizationService', async t => {
     await UserTestHelper.delete({ app, user });
   });
 
-  await t.test(`Inactive User`, async t => {
-    const user = User.fake({
-      active: false,
-      policy: {
-        version: '1.1.0',
-        statement: [
-          {
-            action: 'data:find',
-            resource: 'acme.*'
-          }
-        ]
-      }
-    });
-    await UserTestHelper.create({ app, user });
-    const token = await UserTestHelper.login({
-      app,
-      user
-    });
-
-    const response = await TestHelper.inject(app, {
-      method: 'POST',
-      url: route,
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
-      payload: {
-        collection: 'srn:coeus:acme::collection',
-        db: 'acme'
-      }
-    });
-
-    t.equivalent(response.json(), {
-      statusCode: 403,
-      error: 'Forbidden',
-      message: 'Authorization token is invalid: User is inactive'
-    });
-
-    await UserTestHelper.delete({ app, user });
-  });
-
   t.tearDown(async () => {
     return app.close();
   });

@@ -74,7 +74,8 @@ export class User implements IUser {
           }
         ]
       },
-      hash: faker.random.alphaNumeric(60)
+      hash: faker.random.alphaNumeric(60),
+      verified: true
     };
 
     return new User(Object.assign(data, overrides));

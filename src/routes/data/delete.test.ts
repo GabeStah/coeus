@@ -15,6 +15,7 @@ test('routes/data/delete', async t => {
     username: 'johnsmith-delete',
     password: 'password',
     active: true,
+    verified: true,
     policy: {
       version: '1.1.0',
       statement: [

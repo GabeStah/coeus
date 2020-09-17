@@ -117,10 +117,8 @@ export class UserService extends AuthorizationService {
       .collection(this.collection)
       .updateOne({ _id: new ObjectID(user.id) }, { $set: { active: true } });
 
-    if (result.modifiedCount > 0) {
-      // Update local copy field without requiring new db query
-      user.active = true;
-    }
+    // Update local copy field without requiring new db query
+    user.active = true;
 
     return user;
   }
@@ -267,7 +265,8 @@ export class UserService extends AuthorizationService {
    */
   public async login({ password, username }: UserServiceLoginParams | User) {
     const user = await this.exists({ username });
-    const errorMessage = 'Unable to authenticate with provided credentials.';
+    const errorMessage =
+      'Unable to authenticate with the provided credentials.';
 
     // User doesn't exist; don't indicate to public
     if (!user) {
@@ -277,6 +276,18 @@ export class UserService extends AuthorizationService {
     // Invalid password provided
     if (!(await Utility.doPasswordsMatch(password, user.password))) {
       throw new HttpError.Unauthorized(errorMessage);
+    }
+
+    // Email is not verified
+    if (!user.verified) {
+      throw new HttpError.Forbidden(
+        'Unable to authenticate: Please verify your email address'
+      );
+    }
+
+    // User is inactive
+    if (!user.active) {
+      throw new HttpError.Forbidden('Unable to authenticate: User is inactive');
     }
 
     // Sign and return JWT
@@ -348,10 +359,6 @@ export class UserService extends AuthorizationService {
         $unset: { verificationToken: null }
       }
     });
-
-    if (updatedUser.statusCode !== 200) {
-      throw new HttpError.Unauthorized(errorMessage);
-    }
 
     if (tokenExpired) {
       throw new HttpError.Unauthorized('Verification token has expired.');

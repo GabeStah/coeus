@@ -16,6 +16,7 @@ test('routes/data/find', async t => {
     username: 'johnsmith',
     password: 'password',
     active: true,
+    verified: true,
     policy: {
       version: '1.1.0',
       statement: [
