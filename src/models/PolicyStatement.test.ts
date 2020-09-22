@@ -10,7 +10,7 @@ test('PolicyStatement', async t => {
   await app.ready();
 
   await t.test(
-    `'data' service with wildcard method to '/find' method`,
+    '\'data\' service with wildcard method to \'/find\' method',
     async t => {
       const user = User.fake({
         policy: {
@@ -49,7 +49,7 @@ test('PolicyStatement', async t => {
   );
 
   await t.test(
-    `multiple PolicyStatement actions with valid match is successful`,
+    'multiple PolicyStatement actions with valid match is successful',
     async t => {
       const user = User.fake({
         policy: {
@@ -88,7 +88,7 @@ test('PolicyStatement', async t => {
   );
 
   await t.test(
-    `multiple PolicyStatement actions with no valid match is forbidden`,
+    'multiple PolicyStatement actions with no valid match is forbidden',
     async t => {
       const user = User.fake({
         policy: {
@@ -129,7 +129,7 @@ test('PolicyStatement', async t => {
     }
   );
 
-  await t.test(`request unauthorized database is forbidden`, async t => {
+  await t.test('request unauthorized database is forbidden', async t => {
     const user = User.fake({
       policy: {
         version: '1.1.0',
@@ -168,7 +168,7 @@ test('PolicyStatement', async t => {
     await UserTestHelper.delete({ app, user });
   });
 
-  await t.test(`request unauthorized collection is forbidden`, async t => {
+  await t.test('request unauthorized collection is forbidden', async t => {
     const user = User.fake({
       policy: {
         version: '1.1.0',
@@ -207,7 +207,7 @@ test('PolicyStatement', async t => {
     await UserTestHelper.delete({ app, user });
   });
 
-  await t.test(`request with wildcard resource is allowed`, async t => {
+  await t.test('request with wildcard resource is allowed', async t => {
     const user = User.fake({
       policy: {
         version: '1.1.0',
@@ -244,7 +244,7 @@ test('PolicyStatement', async t => {
   });
 
   await t.test(
-    `request with resource array and wildcard value is allowed`,
+    'request with resource array and wildcard value is allowed',
     async t => {
       const user = User.fake({
         policy: {

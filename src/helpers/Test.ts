@@ -69,7 +69,7 @@ export const DataTestHelper = {
 export const UserTestHelper = {
   create: async ({ app, user }: { app: FastifyInstance; user: User }) => {
     // Exists
-    let existingUser = await new UserService(app).exists({
+    const existingUser = await new UserService(app).exists({
       username: user.username
     });
 

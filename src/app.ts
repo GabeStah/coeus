@@ -1,8 +1,9 @@
 import fastify, { FastifyInstance } from 'fastify';
+import authentication from 'src/plugins/authentication';
 import mongo from 'src/plugins/db/mongo';
+import rateLimiter from 'src/plugins/rate-limiter';
 import routes from 'src/plugins/routes';
 import validate from 'src/plugins/hooks/preValidation';
-import authentication from 'src/plugins/authentication';
 import fastifyCompress from 'fastify-compress';
 import mail from 'src/plugins/mail';
 import { fastifyRequestContextPlugin } from 'fastify-request-context';
@@ -11,7 +12,7 @@ import { fastifyRequestContextPlugin } from 'fastify-request-context';
 
 export function build() {
   const instance: FastifyInstance = fastify({
-    logger: true
+    logger: false
   });
 
   // Compression
@@ -28,14 +29,16 @@ export function build() {
   // Register plugins
   // db
   instance.register(mongo);
-  // hooks
-  instance.register(authentication);
   // mail
   instance.register(mail);
   // request context
   instance.register(fastifyRequestContextPlugin, {
     hook: 'preValidation'
   });
+
+  instance.register(rateLimiter);
+  // hooks
+  instance.register(authentication);
   // routes
   instance.register(routes);
   // validation

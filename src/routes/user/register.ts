@@ -2,13 +2,16 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 import { UserService, UserServiceCreateParams } from 'src/services/UserService';
 import { Utility } from 'src/helpers/Utility';
-import config from 'config';
 import { sendOnVerificationEmail } from 'src/plugins/mail/generators';
+import { UserSchema } from 'src/schema/user';
 
 const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.route<{
     Body: UserServiceCreateParams;
   }>({
+    config: {
+      rateLimit: Utility.getRateLimitConfig()
+    },
     handler: async (request, reply) => {
       const user = await new UserService(instance).create({
         email: request.body.email,
@@ -36,84 +39,7 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
     },
     onResponse: [instance.updateUserHashMap, sendOnVerificationEmail],
     method: 'POST',
-    schema: {
-      body: {
-        type: 'object',
-        required: ['email', 'org', 'username', 'password'],
-        properties: {
-          email: {
-            type: 'string',
-            format: 'email'
-          },
-          org: {
-            type: 'string',
-            minLength: 2
-          },
-          username: {
-            type: 'string',
-            minLength: 4
-          },
-          password: {
-            type: 'string',
-            minLength: 8
-          },
-          policy: {
-            type: 'object',
-            required: ['statement'],
-            properties: {
-              statement: {
-                type: 'array',
-                uniqueItems: true,
-                items: {
-                  type: 'object',
-                  required: ['action', 'resource'],
-                  properties: {
-                    action: {
-                      oneOf: [
-                        {
-                          type: 'string',
-                          enum: config.get('policy.statement.action.values')
-                        },
-                        {
-                          type: 'array',
-                          items: {
-                            type: 'string',
-                            enum: config.get('policy.statement.action.values')
-                          }
-                        }
-                      ]
-                    },
-                    allow: {
-                      type: 'boolean',
-                      default: true
-                    },
-                    resource: {
-                      oneOf: [
-                        {
-                          type: 'array',
-                          items: {
-                            type: 'string',
-                            pattern: '^(?!coeus).+'
-                          }
-                        },
-                        {
-                          type: 'string',
-                          pattern: '^(?!coeus).+'
-                        }
-                      ]
-                    }
-                  }
-                }
-              },
-              version: {
-                type: 'string',
-                default: config.get('version')
-              }
-            }
-          }
-        }
-      }
-    },
+    schema: UserSchema,
     url: Utility.route(['user.prefix', 'user.register'])
   });
 };

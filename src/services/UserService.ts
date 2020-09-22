@@ -73,7 +73,7 @@ export class UserService extends AuthorizationService {
   private readonly collection: string;
 
   constructor(instance: FastifyInstance, params?: UserServiceParams) {
-    let { payload } = params || {};
+    const { payload } = params || {};
     super({ payload, service: 'user' });
     this.db = 'coeus';
     this.collection = 'users';
@@ -97,7 +97,7 @@ export class UserService extends AuthorizationService {
     });
 
     // Find by id, else srn, else username
-    let user = await this.exists(
+    const user = await this.exists(
       id ? { _id: new ObjectID(id) } : srn ? { srn } : { username }
     );
 
@@ -168,7 +168,6 @@ export class UserService extends AuthorizationService {
       .insertOne({
         active,
         email,
-        hash: user.toHash(),
         org,
         password: await Utility.hashPassword({ password }),
         policy: user.policy.toObject(),
@@ -291,7 +290,7 @@ export class UserService extends AuthorizationService {
     }
 
     // Sign and return JWT
-    return { token: await this.instance.jwt.sign(user.signature) };
+    return { token: await this.instance.jwt.sign(await user.toSignature()) };
   }
 
   /**
@@ -309,7 +308,12 @@ export class UserService extends AuthorizationService {
 
     return {
       statusCode: 200,
-      message: `User ${result.modifiedCount == 0 ? 'not ' : ''}updated`
+      message: `User ${
+        result.modifiedCount == 0
+          ? /* istanbul ignore next */
+            'not '
+          : ''
+      }updated`
     };
   }
 
@@ -331,7 +335,12 @@ export class UserService extends AuthorizationService {
 
     return {
       statusCode: 200,
-      message: `User ${result.modifiedCount == 0 ? 'not ' : ''}updated`
+      message: `User ${
+        result.modifiedCount == 0
+          ? /* istanbul ignore next */
+            'not '
+          : ''
+      }updated`
     };
   }
 
@@ -366,7 +375,7 @@ export class UserService extends AuthorizationService {
 
     return {
       statusCode: 200,
-      message: `User successfully verified.`
+      message: 'User successfully verified.'
     };
   }
 }

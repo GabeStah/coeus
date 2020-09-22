@@ -1,9 +1,11 @@
 import config from 'config';
+import { Constraint, ConstraintFactory } from 'src/models/constraint';
 
 export interface IPolicyStatement {
   action: Array<string> | string;
   allow?: boolean;
   resource: Array<string> | string;
+  constraints?: Array<Constraint>;
 }
 
 interface ComparisonParams {
@@ -15,6 +17,7 @@ export class PolicyStatement implements IPolicyStatement {
   action: Array<string> | string;
   allow?: boolean = true;
   resource: Array<string> | string;
+  constraints?: Array<Constraint>;
   private actionSeparator: string = config.get(
     'policy.statement.action.separator'
   );
@@ -23,10 +26,13 @@ export class PolicyStatement implements IPolicyStatement {
   );
   private wildcard: string = config.get('policy.statement.wildcard');
 
-  constructor(params: IPolicyStatement) {
+  constructor(params: Partial<PolicyStatement> | IPolicyStatement) {
     this.action = params.action;
     this.allow = params.allow;
     this.resource = params.resource;
+    this.constraints = params.constraints?.map(constraint =>
+      ConstraintFactory(constraint)
+    );
   }
 
   /**
@@ -94,6 +100,46 @@ export class PolicyStatement implements IPolicyStatement {
   }
 
   /**
+   * Find matching PolicyStatements.
+   *
+   * @param statements
+   * @param options
+   */
+  public static find = ({
+    statements,
+    options
+  }: {
+    statements: PolicyStatement[];
+    options: {
+      service: string;
+      method: string;
+      db: string;
+      collection: string;
+    };
+  }): PolicyStatement[] | null => {
+    const matches = statements.filter(statement => {
+      const { service, method, db, collection } = options;
+      if (
+        statement.matchesServiceMethod({
+          method,
+          service
+        }) &&
+        statement.matchesCollectionDatabase({
+          db,
+          collection
+        }) &&
+        (statement.allow === null ||
+          statement.allow === undefined ||
+          !!statement.allow === true)
+      ) {
+        return statement;
+      }
+    });
+
+    return matches.length > 0 ? matches : null;
+  };
+
+  /**
    * Get database and collection string tuple from resource string.
    *
    * @param resource
@@ -130,6 +176,11 @@ export class PolicyStatement implements IPolicyStatement {
     db: string;
     collection: string;
   }) {
+    if (!db || !collection) {
+      // If db or collection missing, match
+      return true;
+    }
+
     if (typeof this.resource === 'string') {
       // short circuit if resource is wildcard
       if (this.resource === this.wildcard) {
@@ -192,8 +243,8 @@ export class PolicyStatement implements IPolicyStatement {
     service,
     method
   }: {
-    service: string;
-    method: string;
+    service?: string;
+    method?: string;
   }) {
     if (typeof this.action === 'string') {
       const [policyService, policyMethod] = this.getServiceAndMethodFromAction(
@@ -243,6 +294,7 @@ export class PolicyStatement implements IPolicyStatement {
     return {
       action: this.action,
       allow: this.allow,
+      constraints: this.constraints?.map(constraint => constraint.toObject()),
       resource: this.resource
     };
   }

@@ -57,7 +57,7 @@ export const sendOnActivationEmail = async function(
   const user = this.requestContext.get('user');
 
   if (user && user.email && user.active && user.verified) {
-    const token = await this.jwt.sign(user.signature);
+    const token = await this.jwt.sign(await user.toSignature());
     const mailOptions: NodeMail.Options = {
       from: `"${config.get('mail.from.name')}" <${config.get(
         'mail.from.address'
@@ -101,7 +101,7 @@ export const sendTokenEmail = async function(
   const user = this.requestContext.get('user');
 
   if (user && user.email && user.active && user.verified) {
-    const token = await this.jwt.sign(user.signature);
+    const token = await this.jwt.sign(await user.toSignature());
     const mailOptions: NodeMail.Options = {
       from: `"${config.get('mail.from.name')}" <${config.get(
         'mail.from.address'
@@ -147,8 +147,8 @@ export const sendOnVerificationEmail = async function(
       )}>`,
       to: user.email,
       subject: 'Email Verification',
-      text: `Please verify your email address by opening the following link: ${url}`,
-      html: `Please verify your email address by clicking the link below:<br/><br/><a href="${url}">${url}</a>`
+      text: `Please verify your email address for the ${user.username} account by opening the following link: ${url}`,
+      html: `Please verify your email address for the ${user.username} account by clicking the link below:<br/><br/><a href="${url}">${url}</a>`
     };
 
     await sendEmail({ instance: this, request, mailOptions });

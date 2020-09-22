@@ -7,6 +7,9 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.route<{
     Querystring: UserServiceVerifyParams;
   }>({
+    config: {
+      rateLimit: Utility.getRateLimitConfig()
+    },
     handler: async (request, reply) =>
       new UserService(instance).verify({
         token: request.query.token

@@ -72,7 +72,7 @@ test('routes/data/update', async t => {
     t.strictEqual(response.statusCode, 404, 'returns a status code of 404');
   });
 
-  await t.test(`without body fails`, async t => {
+  await t.test('without body fails', async t => {
     const response = await getRequestResponse();
     t.equivalent(response.json(), {
       statusCode: 400,
@@ -81,16 +81,16 @@ test('routes/data/update', async t => {
     });
   });
 
-  await t.test(`with empty body`, async t => {
+  await t.test('with empty body', async t => {
     const response = await getRequestResponse({ payload: {} });
     t.equivalent(response.json(), {
       statusCode: 400,
       error: 'Bad Request',
-      message: "body should have required property 'collection'"
+      message: 'body should have required property \'collection\''
     });
   });
 
-  await t.test(`with body missing db`, async t => {
+  await t.test('with body missing db', async t => {
     const response = await getRequestResponse({
       payload: {
         collection: ''
@@ -103,7 +103,7 @@ test('routes/data/update', async t => {
     });
   });
 
-  await t.test(`with empty db`, async t => {
+  await t.test('with empty db', async t => {
     const response = await getRequestResponse({
       payload: {
         collection: 'something',
@@ -118,7 +118,7 @@ test('routes/data/update', async t => {
     });
   });
 
-  await t.test(`without filter property`, async t => {
+  await t.test('without filter property', async t => {
     const response = await getRequestResponse({
       payload: {
         collection: 'srn:coeus:acme::collection',
@@ -133,7 +133,7 @@ test('routes/data/update', async t => {
     });
   });
 
-  await t.test(`with no filter properties`, async t => {
+  await t.test('with no filter properties', async t => {
     const response = await getRequestResponse({
       payload: {
         collection: 'srn:coeus:acme::collection',
@@ -149,7 +149,7 @@ test('routes/data/update', async t => {
     });
   });
 
-  await t.test(`without update property`, async t => {
+  await t.test('without update property', async t => {
     const response = await getRequestResponse({
       payload: {
         collection: 'srn:coeus:acme::collection',
@@ -167,7 +167,7 @@ test('routes/data/update', async t => {
     });
   });
 
-  await t.test(`with no update properties`, async t => {
+  await t.test('with no update properties', async t => {
     const response = await getRequestResponse({
       payload: {
         collection: 'srn:coeus:acme::collection',
@@ -187,7 +187,7 @@ test('routes/data/update', async t => {
   });
 
   await t.test(
-    `with valid collection, db, filter, and update document`,
+    'with valid collection, db, filter, and update document',
     async t => {
       await DataTestHelper.delete({
         app,
@@ -235,7 +235,7 @@ test('routes/data/update', async t => {
   );
 
   await t.test(
-    `with valid collection, db, filter, and update multiple documents`,
+    'with valid collection, db, filter, and update multiple documents',
     async t => {
       await DataTestHelper.delete({
         app,

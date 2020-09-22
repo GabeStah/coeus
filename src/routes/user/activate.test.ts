@@ -31,7 +31,7 @@ test('routes/user/activate', async t => {
   };
 
   await t.test(
-    `can activate with valid PolicyStatement and target user`,
+    'can activate with valid PolicyStatement and target user',
     async t => {
       const targetUser = await UserTestHelper.create({
         app,
@@ -68,7 +68,7 @@ test('routes/user/activate', async t => {
     }
   );
 
-  await t.test(`can activate via username`, async t => {
+  await t.test('can activate via username', async t => {
     const targetUser = await UserTestHelper.create({
       app,
       user: User.fake({ active: false, verified: true })
@@ -103,7 +103,7 @@ test('routes/user/activate', async t => {
     await UserTestHelper.delete({ app, user: targetUser });
   });
 
-  await t.test(`can activate via srn`, async t => {
+  await t.test('can activate via srn', async t => {
     const targetUser = await UserTestHelper.create({
       app,
       user: User.fake({ active: false, verified: true })
@@ -139,7 +139,7 @@ test('routes/user/activate', async t => {
   });
 
   await t.test(
-    `cannot authorize without coeus.users PolicyStatement`,
+    'cannot authorize without coeus.users PolicyStatement',
     async t => {
       const targetUser = await UserTestHelper.create({
         app,
@@ -178,7 +178,7 @@ test('routes/user/activate', async t => {
     }
   );
 
-  await t.test(`cannot activate unfound user`, async t => {
+  await t.test('cannot activate unfound user', async t => {
     const targetUser = await UserTestHelper.create({
       app,
       user: User.fake({ active: false, verified: true })

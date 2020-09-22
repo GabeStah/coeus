@@ -13,76 +13,84 @@ In Greek mythology [Coeus](https://en.wikipedia.org/wiki/Coeus) is the son of Ur
   - [4.3. Basic Data Retrieval](#43-basic-data-retrieval)
   - [4.4. Full Text Search](#44-full-text-search)
     - [4.4.1. Conclusion](#441-conclusion)
-- [5. Database: MongoDB](#5-database-mongodb)
-  - [5.1. Naming Conventions](#51-naming-conventions)
-  - [5.2. Databases](#52-databases)
-    - [5.2.1. Examples](#521-examples)
-  - [5.3. Collections](#53-collections)
-    - [5.3.1. Examples](#531-examples)
-  - [5.4. Document](#54-document)
-- [6. Identifiers](#6-identifiers)
-- [7. Protected Database / Collections](#7-protected-database--collections)
-- [8. Users, Authentication, and Authorization](#8-users-authentication-and-authorization)
-  - [8.1. User Registration](#81-user-registration)
-    - [8.1.1. /user/register Request Example](#811-userregister-request-example)
-  - [8.2. User Email Verification](#82-user-email-verification)
-  - [8.3. User Login](#83-user-login)
-    - [8.3.1. /user/login Request Example](#831-userlogin-request-example)
-  - [8.4. Authentication](#84-authentication)
-    - [8.4.1. User Hash Map Cache](#841-user-hash-map-cache)
-  - [8.5. Authorization](#85-authorization)
-    - [8.5.1. Policy](#851-policy)
-      - [8.5.1.1. Policy Statement: Property Case Sensitivity](#8511-policy-statement-property-case-sensitivity)
-      - [8.5.1.2. Policy Statement: action](#8512-policy-statement-action)
-      - [8.5.1.3. Policy Statement: resource](#8513-policy-statement-resource)
-      - [8.5.1.4. Policy Statement: allow](#8514-policy-statement-allow)
-      - [8.5.1.5. Example Policies](#8515-example-policies)
-- [9. Routes](#9-routes)
-- [10. Story Implementation Examples](#10-story-implementation-examples)
-  - [10.1. WCASG Dashboard: Usage Stats](#101-wcasg-dashboard-usage-stats)
-  - [10.2. Acme Logistics: Fruit](#102-acme-logistics-fruit)
-  - [10.3. Strapi CMS](#103-strapi-cms)
-  - [10.4. Salesforce: CSV](#104-salesforce-csv)
-- [11. API](#11-api)
-  - [11.1. Errors](#111-errors)
-    - [11.1.1. Error Response Example](#1111-error-response-example)
-- [12. Requests](#12-requests)
-  - [12.1. Limits](#121-limits)
-  - [12.2. Timeout](#122-timeout)
-  - [12.3. /data/find](#123-datafind)
-    - [12.3.1. /data/find Schema](#1231-datafind-schema)
-    - [12.3.2. /data/find Request Example](#1232-datafind-request-example)
-  - [12.4. /data/insert](#124-datainsert)
-    - [12.4.1. /data/insert Schema](#1241-datainsert-schema)
-    - [12.4.2. /data/insert Request Example](#1242-datainsert-request-example)
-  - [12.5. /data/delete](#125-datadelete)
-    - [12.5.1. /data/delete Schema](#1251-datadelete-schema)
-    - [12.5.2. /data/delete Request Example](#1252-datadelete-request-example)
-  - [12.6. /data/update](#126-dataupdate)
-    - [12.6.1. /data/update Schema](#1261-dataupdate-schema)
-    - [12.6.2. /data/update Request Example](#1262-dataupdate-request-example)
-- [13. TODO](#13-todo)
-  - [13.1. Compression](#131-compression)
-  - [13.2. In-Memory Cache of User Data](#132-in-memory-cache-of-user-data)
-  - [13.3. /data/delete Logic Check: `_id` Property](#133-datadelete-logic-check-_id-property)
-  - [13.4. Pagination](#134-pagination)
-  - [13.5. Logging](#135-logging)
-  - [13.6. Caching](#136-caching)
-  - [13.7. CORS Support](#137-cors-support)
-  - [13.8. /user/register Option: email](#138-userregister-option-email)
-  - [13.9. /user/login Option: email](#139-userlogin-option-email)
-  - [13.10. /user/activate Endpoint](#1310-useractivate-endpoint)
-  - [13.11. Request Option: idempotence_id](#1311-request-option-idempotence_id)
-  - [13.12. Request Option: format](#1312-request-option-format)
-  - [13.13. Request Option: email](#1313-request-option-email)
-  - [13.14. Benchmarking](#1314-benchmarking)
-  - [13.15. Rate Limiting](#1315-rate-limiting)
-  - [13.16. PolicyStatement Property: rateLimit](#1316-policystatement-property-ratelimit)
-  - [13.17. PolicyStatement Property: ip](#1317-policystatement-property-ip)
-  - [13.18. PolicyStatement Property: hostname](#1318-policystatement-property-hostname)
-  - [13.19. /user/explain Endpoint](#1319-userexplain-endpoint)
-  - [13.20. API Documentation Generator](#1320-api-documentation-generator)
-  - [13.21. Commit Release Update](#1321-commit-release-update)
+- [5. Rate Limits](#5-rate-limits)
+  - [5.1. Global Rate Limits](#51-global-rate-limits)
+  - [5.2. Policy-Based Rate Limits](#52-policy-based-rate-limits)
+- [6. Database: MongoDB](#6-database-mongodb)
+  - [6.1. Naming Conventions](#61-naming-conventions)
+  - [6.2. Databases](#62-databases)
+    - [6.2.1. Examples](#621-examples)
+  - [6.3. Collections](#63-collections)
+    - [6.3.1. Examples](#631-examples)
+  - [6.4. Document](#64-document)
+- [7. Identifiers](#7-identifiers)
+- [8. Protected Database / Collections](#8-protected-database--collections)
+- [9. Users, Authentication, and Authorization](#9-users-authentication-and-authorization)
+  - [9.1. User Registration](#91-user-registration)
+    - [9.1.1. /user/register Request Example](#911-userregister-request-example)
+  - [9.2. User Email Verification](#92-user-email-verification)
+  - [9.3. User Login](#93-user-login)
+    - [9.3.1. /user/login Request Example](#931-userlogin-request-example)
+  - [9.4. Authentication](#94-authentication)
+    - [9.4.1. User Hash Map Cache](#941-user-hash-map-cache)
+  - [9.5. Authorization](#95-authorization)
+    - [9.5.1. Policy](#951-policy)
+      - [9.5.1.1. Policy Statement: Property Case Sensitivity](#9511-policy-statement-property-case-sensitivity)
+      - [9.5.1.2. Policy Statement: action](#9512-policy-statement-action)
+      - [9.5.1.3. Policy Statement: resource](#9513-policy-statement-resource)
+      - [9.5.1.4. Policy Statement: allow](#9514-policy-statement-allow)
+      - [9.5.1.5. Policy Statement: constraints](#9515-policy-statement-constraints)
+        - [9.5.1.5.1. MaxRequestsConstraint](#95151-maxrequestsconstraint)
+        - [9.5.1.5.2. IpConstraint](#95152-ipconstraint)
+        - [9.5.1.5.3. HostnameConstraint](#95153-hostnameconstraint)
+      - [9.5.1.6. Example Policies](#9516-example-policies)
+- [10. Routes](#10-routes)
+- [11. Story Implementation Examples](#11-story-implementation-examples)
+  - [11.1. WCASG Dashboard: Usage Stats](#111-wcasg-dashboard-usage-stats)
+  - [11.2. Acme Logistics: Fruit](#112-acme-logistics-fruit)
+  - [11.3. Strapi CMS](#113-strapi-cms)
+  - [11.4. Salesforce: CSV](#114-salesforce-csv)
+- [12. API](#12-api)
+  - [12.1. Errors](#121-errors)
+    - [12.1.1. Error Response Example](#1211-error-response-example)
+- [13. Requests](#13-requests)
+  - [13.1. Limits](#131-limits)
+  - [13.2. Timeout](#132-timeout)
+  - [13.3. /data/find](#133-datafind)
+    - [13.3.1. /data/find Schema](#1331-datafind-schema)
+    - [13.3.2. /data/find Request Example](#1332-datafind-request-example)
+  - [13.4. /data/insert](#134-datainsert)
+    - [13.4.1. /data/insert Schema](#1341-datainsert-schema)
+    - [13.4.2. /data/insert Request Example](#1342-datainsert-request-example)
+  - [13.5. /data/delete](#135-datadelete)
+    - [13.5.1. /data/delete Schema](#1351-datadelete-schema)
+    - [13.5.2. /data/delete Request Example](#1352-datadelete-request-example)
+  - [13.6. /data/update](#136-dataupdate)
+    - [13.6.1. /data/update Schema](#1361-dataupdate-schema)
+    - [13.6.2. /data/update Request Example](#1362-dataupdate-request-example)
+- [14. TODO](#14-todo)
+  - [14.1. Compression](#141-compression)
+  - [14.2. In-Memory Cache of User Data](#142-in-memory-cache-of-user-data)
+  - [14.3. /data/delete Logic Check: `_id` Property](#143-datadelete-logic-check-_id-property)
+  - [14.4. Pagination](#144-pagination)
+  - [14.5. Logging](#145-logging)
+  - [14.6. Caching](#146-caching)
+  - [14.7. CORS Support](#147-cors-support)
+  - [14.8. /user/register Option: email](#148-userregister-option-email)
+  - [14.9. /user/login Option: email](#149-userlogin-option-email)
+  - [14.10. /user/activate Endpoint](#1410-useractivate-endpoint)
+  - [14.11. Request Option: idempotence_id](#1411-request-option-idempotence_id)
+  - [14.12. Request Option: format](#1412-request-option-format)
+  - [14.13. Request Option: email](#1413-request-option-email)
+  - [14.14. Benchmarking](#1414-benchmarking)
+  - [14.15. Rate Limiting](#1415-rate-limiting)
+  - [14.16. PolicyStatement Property: rateLimit](#1416-policystatement-property-ratelimit)
+  - [14.17. PolicyStatement Property: ip](#1417-policystatement-property-ip)
+  - [14.18. PolicyStatement Property: hostname](#1418-policystatement-property-hostname)
+  - [14.19. /user/explain Endpoint](#1419-userexplain-endpoint)
+  - [14.20. API Documentation Generator](#1420-api-documentation-generator)
+  - [14.21. Commit Release Update](#1421-commit-release-update)
+  - [14.22. Two-Factor Authentication (TOTP)](#1422-two-factor-authentication-totp)
 
 # 1. Conventions and Terminology
 
@@ -247,12 +255,29 @@ Caveat: These tests are based on my own local machine.
 
 If results are similar in production, a target maximum of `500 req/sec` across the app should be sufficient and maintainable.
 
-# 5. Database: MongoDB
+# 5. Rate Limits
+
+Rate limiting is based on a [forked version](https://github.com/GabeStah/fastify-rate-limit/tree/add-fastify-hook-method-setting) of `fastify-rate-limit`.  The fork is necessary to allow rate limiting to be executed at any point in the Fastify lifecycle.
+
+## 5.1. Global Rate Limits
+
+Global rate limiting is defined in the `rateLimit` configuration options and behaves as expected:
+
+- Each request is tracked in memory using a unique identifer (`User.id`, if applicable token payload exists, otherwise IP address is used).
+- The `rateLimit.timeWindow` defines the period of time in which the `rateLimit.maxRequests` number of requests are accepted for each unique key.
+- By default, a given request source can perform a maximum of `60 requests per second`.
+- If a limit is exceeded the response is a `429` error.
+
+## 5.2. Policy-Based Rate Limits
+
+Each User Policy may define a `maxRequests` **Constraint**.  See [Policy Statement: Constraints](#9515-policy-statement-constraints) for details.
+
+# 6. Database: MongoDB
 
 - Version: 4.4
 - Region: AWS us-east-1 (required for version 4.4 free tier support)
 
-## 5.1. Naming Conventions
+## 6.1. Naming Conventions
 
 **NOTE:** Windows users may experience trouble within the `mongo` shell when using special characters (`/\. "$*<>:|?`). Please use a Linux-based shell when executing shell commands that use such characters in relevant `namespaces`.
 
@@ -266,18 +291,18 @@ If results are similar in production, a target maximum of `500 req/sec` across t
 - **Collection** names _MUST NOT_ exceed a maximum of `190` characters in length.
 - **Role** names _MUST_ contain only letters, numbers, hyphens, and underscores.
 
-## 5.2. Databases
+## 6.2. Databases
 
 Each **database** _MUST_:
 
 - be globally unique and identifiable, based on a single high-level entity such as an `organization`.
 
-### 5.2.1. Examples
+### 6.2.1. Examples
 
 - `acme`: A **database name** for the Acme `org`
 - `solarix`: For Solarix projects
 
-## 5.3. Collections
+## 6.3. Collections
 
 Each **collection** _MUST_:
 
@@ -291,19 +316,19 @@ Each **collection** _SHOULD_:
 
 A higher-order **SRN** is preferred for aggregate queries and data storage, but smaller **collections** can be created to store separate `project` or even `app` data.
 
-### 5.3.1. Examples
+### 6.3.1. Examples
 
 An **SRN** of `srn::acme` is the highest order **SRN** for the `Acme` `org`, applying to all services and all projects within that `org`. A **collection `name`** of `srn:coeus:acme::collection` may contain any type of Acme-related data.
 
 Alternatively, an **SRN** of `srn::acme:tracker:api:production` with related **collection `name`** of `srn:coeus:acme:tracker:api:production::collection` is expected to contain data only related to Acme's Tracker API project, in the production environment of the AWS EC2 service. This is a much smaller scope, so take care when choosing which **collection** names to create.
 
-## 5.4. Document
+## 6.4. Document
 
 Each **document** _MUST_:
 
 - be less than `16MB`.
 
-# 6. Identifiers
+# 7. Identifiers
 
 - database
 - collection
@@ -317,13 +342,13 @@ Each **document** _MUST_:
 - resource-type
 - resource-id
 
-# 7. Protected Database / Collections
+# 8. Protected Database / Collections
 
 The `coeus` database is protected and used for administration purposes.
 
 - `coeus.users` - Stores all User documents
 
-# 8. Users, Authentication, and Authorization
+# 9. Users, Authentication, and Authorization
 
 Coeus authentication and authorization is performed based on the requesting User's `coeus.users` document. The schema of a `user` document can be found in the [src/routes/user/register.ts](src/routes/user/register.ts#L21) file. Below is an example `user` document:
 
@@ -359,13 +384,13 @@ Coeus authentication and authorization is performed based on the requesting User
 }
 ```
 
-## 8.1. User Registration
+## 9.1. User Registration
 
 A new User is registered by making an appropriate request to the `/user/register` endpoint. The current schema can be found in the [src/routes/user/register.ts](src/routes/user/register.ts#L21) file.
 
 Once a User is registered and set `active` by an admin, that user can then login to retrieve an authentication token.
 
-### 8.1.1. /user/register Request Example
+### 9.1.1. /user/register Request Example
 
 Each **User** _MUST_ contain:
 
@@ -441,17 +466,17 @@ This successfully registers the above user and responds with the created message
 }
 ```
 
-## 8.2. User Email Verification
+## 9.2. User Email Verification
 
 A `verificationToken` sub-document is attached to the User document upon registration. The User is emailed a verification link upon registration. Clicking this route verifies the User's email address, setting the `verified` property to `true` and removing the `verificationToken` sub-document.
 
 The `verificationToken` is a 60-character string and expires after 24 hours.
 
-## 8.3. User Login
+## 9.3. User Login
 
 After registering a User may send a request to the `/user/login` endpoint to authenticate and retrieve their unique JSON Web Token (JWT).
 
-### 8.3.1. /user/login Request Example
+### 9.3.1. /user/login Request Example
 
 A `/user/login` request payload _MUST_ contain:
 
@@ -512,7 +537,7 @@ The generated `token` is issued by `coeus.solarix.tools` and contains encoded us
 }
 ```
 
-## 8.4. Authentication
+## 9.4. Authentication
 
 Authentication is performed for all **protected** endpoints. Such endpoints perform a JSON Web Token `preValidation` phase before processing the request payload. For example, all `/data/*` endpoints are protected.
 
@@ -531,7 +556,7 @@ $ curl --location --request POST 'http://localhost:8000/data/find' \
 }'
 ```
 
-### 8.4.1. User Hash Map Cache
+### 9.4.1. User Hash Map Cache
 
 The content of the JWT payload is trustworthy and authenticates the defined User along with their appropriate Policy permissions.
 
@@ -569,7 +594,7 @@ During JWT verification within a **protected** endpoint the payload's `hash` is 
 
 The local cached User hashmap is updated anytime User db data is generated or updated. This allows Coeus to maintain real-time JWT validation without making unnecessary database calls on every request.
 
-## 8.5. Authorization
+## 9.5. Authorization
 
 The passed JWT is decoded and evaluated to determine the privileges assigned to the User based on the User's **Policy** object.
 
@@ -582,7 +607,7 @@ In general, authorization is based on a combination of **four** properties:
 
 Coeus compares the incoming request against the **Policy** permissions granted to the User to determine if the request is authorized.
 
-### 8.5.1. Policy
+### 9.5.1. Policy
 
 The `policy` property of a **User** document defines permissions for that user. A policy consists of one or more `statement` objects.
 
@@ -603,17 +628,17 @@ A **policy statement** _MAY_ contain:
 
 - an `allow` property.
 
-#### 8.5.1.1. Policy Statement: Property Case Sensitivity
+#### 9.5.1.1. Policy Statement: Property Case Sensitivity
 
 All `PolicyStatement` property strings are **case insensitive.** Coeus normalizes all string casings during execution, so consistency and convention dictates that all property values remain lowercase.
 
-#### 8.5.1.2. Policy Statement: action
+#### 9.5.1.2. Policy Statement: action
 
 The `action` property defines the action(s) allowed or denied by the **statement**. An `action` string _MUST_ be formatted as `<service>:<method>`. For example, an `action` of `data:find` indicates the `find` method for the `data` service.
 
 An asterisk (`*`) may be substituted for the `<method>` as a wildcard indicator for **ALL** methods within the given `<service>`. For example, `data:*` applies actions to all methods of the `data` service.
 
-#### 8.5.1.3. Policy Statement: resource
+#### 9.5.1.3. Policy Statement: resource
 
 The `resource` property defines the resource(s) allowed or denied by the **statement**. A `resource` string _MUST_ be formatted as `<db>.<collection>`. For example, a `resource` of `acme.srn:coeus:acme::collection` indicates the `srn:coeus:acme::collection` collection of the `acme` database.
 
@@ -621,13 +646,57 @@ An asterisk (`*`) may be substituted for the `<collection>` as a wildcard indica
 
 An asterisk (`*`) may also be substituted for the entire `resource` string as a wildcard indicator for **ALL** database and collection combinations. **This provides full admin access, so use with caution.**
 
-#### 8.5.1.4. Policy Statement: allow
+#### 9.5.1.4. Policy Statement: allow
 
 The `allow` property determines if the **statement** is allowing or denying permission indicated by the related `action` and `resource`.
 
 By default, a **statement** without an `allow` property is assumed to be `true`, allowing permission to the related `resource`. Otherwise, the default policy across the app is to deny permission unless explicitly allowed.
 
-#### 8.5.1.5. Example Policies
+#### 9.5.1.5. Policy Statement: constraints
+
+The `constraints` array defines an optional set of rules that the matching request **statement** must pass to allow the request.
+
+An example **PolicyStatement** with **Constraints** defined:
+
+```json
+{
+  "action": ["data:insert", "data:update"],
+  "allow": true,
+  "resource": "acme.srn:coeus:acme::collection",
+  "constraints": [
+    {
+      "type": "maxRequests",
+      "value": 60,
+    },
+    {
+      "type": "ip",
+      "value": ["127.0.0.1"],
+    },
+    {
+      "type": "hostname",
+      "value": "localhost"
+    }
+  ]
+}
+```
+
+##### 9.5.1.5.1. MaxRequestsConstraint
+
+A **MaxRequestsConstraint** determines the maximum number of requests matching the **statement** that can be made within the `rateLimit.timeWindow` period (default: 60 seconds).  This value *overrides* the global value and is specific to the matching User and PolicyStatement.
+
+##### 9.5.1.5.2. IpConstraint
+
+A **IpConstraint** determines which requesting IP address(es) are allowed for requests matching the **statement**.  The `value` _MUST_ be a string or array of strings, each containing a valid IP address.
+
+If the matching **statement** contains an **IpConstraint**, the requesting IP address _MUST_ match one of the values or the request is denied.
+
+##### 9.5.1.5.3. HostnameConstraint
+
+A **HostnameConstraint** determines which requesting hostname(s) are allowed for requests matching the **statement**.  The `value` _MUST_ be a string or array of strings, each containing a valid hostname _without_ a port (e.g. `localhost` or `example.com` are valid, `localhost:8000` or `example.com:80` are invalid).
+
+If the matching **statement** contains an **HostnameConstraint**, the requesting hostname _MUST_ match one of the values or the request is denied.
+
+#### 9.5.1.6. Example Policies
 
 The following policy is intended for an Acme `org` User with moderate permissions. The policy:
 
@@ -683,7 +752,7 @@ The following policy is intended for a Solarix `org` User with full administrati
 }
 ```
 
-# 9. Routes
+# 10. Routes
 
 - /admin/authenticate - Authenticate as a User without password and receive JWT
 - /admin/register - Register a User, automatically verify and activate, and receive JWT
@@ -694,9 +763,9 @@ The following policy is intended for a Solarix `org` User with full administrati
 - /user/login - Login via `username` / `password` and receive JWT
 - /user/register - Register a User
 
-# 10. Story Implementation Examples
+# 11. Story Implementation Examples
 
-## 10.1. WCASG Dashboard: Usage Stats
+## 11.1. WCASG Dashboard: Usage Stats
 
 > WCASG is to start collection some very basic user stats about their widget in WCASG Dashboard issue #75 and @gabestah must store that data. The database is already built, underwent customization stresses during development and may not perfectly fit the widget/dashboard model as if it was built from scratch. However, it must still report data to SolData on how many times a widget is loaded by a web browser. Perhaps @gabestah reads the future documentation about SolData API, integrates the database storage per the specific project best fit solutions and uses a provided snippet of php to run a cronjob to POST to webhook that will be processed & stored by SolData in a timely manner. @ksomerville is then able to visualize the pageview & bandwidth data at the end of the month to include on the customer invoices.
 
@@ -710,21 +779,21 @@ The following policy is intended for a Solarix `org` User with full administrati
 > Average Bandwidth Per Sites (Bandwidth total / # of active sites) per month
 > Voice Bandwidth Used Per Month (For all active sites)
 
-## 10.2. Acme Logistics: Fruit
+## 11.2. Acme Logistics: Fruit
 
 > bettyDoe at Acme Logistics asks @ksomerville to create a small app for her logistics company that transports fruit from regional farms. The client will require a database that stores information such as fruits, client profiles, farm asset profiles, current deliveries, sales amounts and a wide variety of other points. He refers to internal developer documentation and the basic API it offers so that the company's data can be easily submitted and eventually visualized in a report. He then writes a small script that submits some of that data to the SolData web service daily. @ksomerville then creates a visualization to automate weekly and sends the client an email with only the week's sales numbers and number of deliveries.
 
-## 10.3. Strapi CMS
+## 11.3. Strapi CMS
 
 > charlieDoe wants Solarix to make a website for his pallet processing & storage business. His request is for a simple brochure website with an single dynamic page that displays the status of each pallet in his warehouse so that his customers know the current progress on their job. @ksomerville reads up on documentation requiremeents and there are a few starter databases in template repos to fork from, so he chooses to include the MongoDB starter with Strapi headless client. He writes his project, including the brochure/business content in the website attached to the CMS and giving the the customer access to the Strapi dashboard to update pallet info as needed. The MongoDB fork was already modeled to be structured in the preferred way SolData dictates and the Strapi repo included a snippet to add a POST to SolData web service whenever Strapi data is saved.
 
-## 10.4. Salesforce: CSV
+## 11.4. Salesforce: CSV
 
 > deniseDoe has a large customer database from Salesforce exported to csv and she want's it accessible via a JSON rest API in the future. @ksomerville visits an internal Solarix tool that triggers a process that: imports the CSV > SolData creates an EAV model table to store that data and saves it > SolData then allows that data to be accessed via REST API to those who have access to that asset.
 
-# 11. API
+# 12. API
 
-## 11.1. Errors
+## 12.1. Errors
 
 | Code | Type         | Message                                               | Cause                                                                                                          |
 | ---- | ------------ | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
@@ -735,7 +804,7 @@ The following policy is intended for a Solarix `org` User with full administrati
 | 409  | Conflict     | Unable to create new user: <username>                 | Attempt to register a new User cannot continue, typically due to a matching `username` already in the database |
 | 401  | Unauthorized | Unable to authenticate with provided credentials.     | Attempt to login failed, either because of invalid `username` or `username/password` combination               |
 
-### 11.1.1. Error Response Example
+### 12.1.1. Error Response Example
 
 ```json
 {
@@ -745,9 +814,9 @@ The following policy is intended for a Solarix `org` User with full administrati
 }
 ```
 
-# 12. Requests
+# 13. Requests
 
-## 12.1. Limits
+## 13.1. Limits
 
 By default, Coeus limits the number of documents returned by a single request:
 
@@ -755,11 +824,11 @@ By default, Coeus limits the number of documents returned by a single request:
 - `1` - Minimum number of documents that can be retrieved. Configurable via the `config.db.thresholds.limit.minimum` path.
 - `100` - Maximum number of documents that can be retrieved. Configurable via the `config.db.thresholds.limit.maximum` path.
 
-## 12.2. Timeout
+## 13.2. Timeout
 
 By default, Coeus restricts all requests to under `5000` milliseconds. This value is configurable via the `config.db.thresholds.timeout.maximum` path.
 
-## 12.3. /data/find
+## 13.3. /data/find
 
 To find one or more documents send a `POST` request to the `/data/find` endpoint.
 
@@ -776,7 +845,7 @@ The body _MAY_ contain:
 
 See [MongoDb Collection.find()](http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#find) for parameter option details.
 
-### 12.3.1. /data/find Schema
+### 13.3.1. /data/find Schema
 
 ```js
 const schema = {
@@ -814,7 +883,7 @@ const schema = {
 };
 ```
 
-### 12.3.2. /data/find Request Example
+### 13.3.2. /data/find Request Example
 
 **Example**: Perform a full text search for the term `Superman` within the `sample_mflix.movies` collection. Limit to a maximum of `5` documents:
 
@@ -886,7 +955,7 @@ $ curl --location --request POST 'http://localhost:8000/data/find' \
 ]
 ```
 
-## 12.4. /data/insert
+## 13.4. /data/insert
 
 To insert one or more documents send a `POST` request to the `/data/insert` endpoint.
 
@@ -902,7 +971,7 @@ The body _MAY_ contain:
 
 See [MongoDb Collection.insertMany()](http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#insertMany) for parameter option details.
 
-### 12.4.1. /data/insert Schema
+### 13.4.1. /data/insert Schema
 
 ```js
 const schema = {
@@ -927,7 +996,7 @@ const schema = {
 };
 ```
 
-### 12.4.2. /data/insert Request Example
+### 13.4.2. /data/insert Request Example
 
 **Example**: Insert 3 simple documents into the `acme.srn:coeus:acme::collection` collection:
 
@@ -966,7 +1035,7 @@ $ curl --location --request POST 'http://localhost:8000/data/insert' \
 }
 ```
 
-## 12.5. /data/delete
+## 13.5. /data/delete
 
 To delete one or more documents send a `POST` request to the `/data/delete` endpoint.
 
@@ -982,7 +1051,7 @@ The body _MAY_ contain:
 
 See [MongoDb Collection.deleteMany()](http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#deleteMany) for parameter option details.
 
-### 12.5.1. /data/delete Schema
+### 13.5.1. /data/delete Schema
 
 ```js
 const schema = {
@@ -1003,7 +1072,7 @@ const schema = {
 };
 ```
 
-### 12.5.2. /data/delete Request Example
+### 13.5.2. /data/delete Request Example
 
 **Example**: Delete all documents with a key `foo` value of `bar` within the `acme.srn:coeus:acme::collection` collection:
 
@@ -1029,7 +1098,7 @@ $ curl --location --request POST 'http://localhost:8000/data/delete' \
 }
 ```
 
-## 12.6. /data/update
+## 13.6. /data/update
 
 Update one or more documents by sending a `POST` request to the `/data/update` endpoint.
 
@@ -1046,7 +1115,7 @@ The body _MAY_ contain:
 
 See [MongoDb Collection.updateMany()](http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#updateMany) for parameter option details.
 
-### 12.6.1. /data/update Schema
+### 13.6.1. /data/update Schema
 
 ```js
 const schema = {
@@ -1073,7 +1142,7 @@ const schema = {
 };
 ```
 
-### 12.6.2. /data/update Request Example
+### 13.6.2. /data/update Request Example
 
 **Example**: Update all documents with a `data` key value that matches the RegEx `^bar` (begins with 'bar') within the `acme.srn:coeus:acme::collection` collection. For all matched documents, set the `data` key value to `foo`:
 
@@ -1106,13 +1175,13 @@ $ curl --location --request POST 'http://localhost:8000/data/update' \
 }
 ```
 
-# 13. TODO
+# 14. TODO
 
-## 13.1. Compression
+## 14.1. Compression
 
 - [x] Integrate response payload compression.
 
-## 13.2. In-Memory Cache of User Data
+## 14.2. In-Memory Cache of User Data
 
 - [x] Using JWT payload to determine Policy is preferred for speed, but the only means of disabling a User for an Admin is to wait for JWT token expiration.
 - [x] Cache User db permissions in-memory for validation against request. Update in-memory cache on any relevant successful `/user` endpoint request.
@@ -1123,88 +1192,93 @@ Generate `hash` when:
 - [x] User document inserted into db
 - [x] User document updated in db
 
-## 13.3. /data/delete Logic Check: `_id` Property
+## 14.3. /data/delete Logic Check: `_id` Property
 
 - If a `/data/delete` `filter` object key is `_id`, perform backend conversion of value to `ObjectId(value)` before making MongoDB request to ensure proper parsing.
 
-## 13.4. Pagination
+## 14.4. Pagination
 
 - see: https://docs.mongodb.com/manual/indexes/#indexes
 
-## 13.5. Logging
+## 14.5. Logging
 
 - Integrate into CloudWatch logs
 
-## 13.6. Caching
+## 14.6. Caching
 
 - Apply request caching; in-memory or Redis-powered.
 
-## 13.7. CORS Support
+## 14.7. CORS Support
 
 - Add CORS support.
 - Integrate with `PolicyStatement` `ip` / `hostname` properties.
 
-## 13.8. /user/register Option: email
+## 14.8. /user/register Option: email
 
 - [x] Integrate email support (AWS SES)
 - [x] Email verification token to user email address.
 - [x] Clicking should set User `verified = true`.
 - [x] Upon verification email user with confirmation and inform to await admin activation.
 
-## 13.9. /user/login Option: email
+## 14.9. /user/login Option: email
 
 - [x] Email generated JWT token to user email address.
 - [x] User must be `active` and `verified`.
 - [x] Send attachment
 
-## 13.10. /user/activate Endpoint
+## 14.10. /user/activate Endpoint
 
 - [x] Endpoint for activating specified User(s), so they can login, recieve JWT, and make requests.
 - [x] Upon activation email User with JWT.
 - [x] Send attachment
 
-## 13.11. Request Option: idempotence_id
+## 14.11. Request Option: idempotence_id
 
 - Mutable action requests (i.e. `delete`, `insert`, `update`) should have an `idempotence_id` to ensure repeated requests are not processed multiple times.
 
-## 13.12. Request Option: format
+## 14.12. Request Option: format
 
 - json, csv, etc: Allow output format of results
 
-## 13.13. Request Option: email
+## 14.13. Request Option: email
 
 - Email address to send results to. Requires background worker system.
 
-## 13.14. Benchmarking
+## 14.14. Benchmarking
 
 - [x] Determine basic route endpoint benchmarks/limitations to gauge proper rate limiting ranges
 
-## 13.15. Rate Limiting
+## 14.15. Rate Limiting
 
-- Set default rate limits, overridable within validated range by PolicyStatement
+- [x] Set default rate limits, overridable within validated range by PolicyStatement
 
-## 13.16. PolicyStatement Property: rateLimit
+## 14.16. PolicyStatement Property: rateLimit
 
-- Override rate limiting for matching service/method requests
+- [x] Override rate limiting for matching service/method requests
 
-## 13.17. PolicyStatement Property: ip
+## 14.17. PolicyStatement Property: ip
 
-- Restrict requests from ip address/range
+- [x] Restrict requests from ip address/range
 
-## 13.18. PolicyStatement Property: hostname
+## 14.18. PolicyStatement Property: hostname
 
-- Restrict requests from hostname
+- [x] Restrict requests from hostname
 
-## 13.19. /user/explain Endpoint
+## 14.19. /user/explain Endpoint
 
 - Explains Policy rules of specified User(s), such as `db` and `collection` access, and associated `service` and `method` allowances.
 
-## 13.20. API Documentation Generator
+## 14.20. API Documentation Generator
 
 - Swagger or similar tool?
 
-## 13.21. Commit Release Update
+## 14.21. Commit Release Update
 
 - https://github.com/conventional-changelog/conventional-changelog
 - https://github.com/conventional-changelog/standard-version
 - https://github.com/semantic-release/commit-analyzer#release-rules
+
+## 14.22. Two-Factor Authentication (TOTP)
+
+- Add two-factor auth for `/user/login` and similar endpoints
+- Package: https://github.com/yeojz/otplib

@@ -11,6 +11,9 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.route<{
     Body: UserServiceActivateParams;
   }>({
+    config: {
+      rateLimit: Utility.getRateLimitConfig()
+    },
     handler: async (request, reply) => {
       const user = await new UserService(instance, {
         payload: request.payload
@@ -25,7 +28,7 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
 
       return {
         statusCode: 200,
-        message: `User activated`
+        message: 'User activated'
       };
     },
     method: 'POST',

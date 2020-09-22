@@ -23,7 +23,7 @@ test('plugins/authentication', async t => {
     await app.close();
   });
 
-  await t.test(`no JWT secret set`, async t => {
+  await t.test('no JWT secret set', async t => {
     const secret = config.get('security.jwt.secret');
     try {
       config.set('security.jwt.secret', null);
@@ -32,14 +32,14 @@ test('plugins/authentication', async t => {
       await app.ready();
       await app.close();
     } catch (e) {
-      t.equivalent(e, new Error("'security.jwt.secret' MUST be defined."));
+      t.equivalent(e, new Error('\'security.jwt.secret\' MUST be defined.'));
     } finally {
       // Reapply for future tests
       config.set('security.jwt.secret', secret);
     }
   });
 
-  await t.test(`valid userHashMap entry`, async t => {
+  await t.test('valid userHashMap entry', async t => {
     const app = build();
     // Await plugin / decorated injection
     await app.ready();
@@ -80,7 +80,7 @@ test('plugins/authentication', async t => {
     await app.close();
   });
 
-  await t.test(`id missing in userHashMap`, async t => {
+  await t.test('id missing in userHashMap', async t => {
     const app = build();
     // Await plugin / decorated injection
     await app.ready();
@@ -131,7 +131,7 @@ test('plugins/authentication', async t => {
     await app.close();
   });
 
-  await t.test(`hash mismatch in userHashMap`, async t => {
+  await t.test('hash mismatch in userHashMap', async t => {
     const app = build();
     // Await plugin / decorated injection
     await app.ready();

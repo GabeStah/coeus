@@ -11,7 +11,6 @@ interface IUserVerificationToken {
 export interface IUser {
   active?: boolean;
   email: string;
-  hash?: string;
   _id?: ObjectID | string;
   org: string;
   password: string;
@@ -25,7 +24,6 @@ export interface IUser {
 export class User implements IUser {
   public active: boolean = false;
   public email: string;
-  public hash: string;
   public _id: ObjectID;
   public org: string;
   public password: string;
@@ -42,7 +40,6 @@ export class User implements IUser {
     }
     this.active = params.active;
     this.email = params.email;
-    this.hash = params.hash;
     this.org = params.org;
     this.password = params.password;
     this.policy = new Policy(params.policy);
@@ -91,11 +88,11 @@ export class User implements IUser {
   /**
    * Get payload signature representing User.
    */
-  get signature() {
+  public async toSignature() {
     return {
       active: this.active,
       email: this.email,
-      hash: this.hash,
+      hash: await this.toHash(),
       id: this.id,
       org: this.org,
       policy: this.policy,
@@ -107,20 +104,22 @@ export class User implements IUser {
   /**
    * Get hash representation of User.
    */
-  public toHash() {
-    return Utility.hash(this.toObject());
+  public async toHash() {
+    return Utility.hash(await this.toObject());
   }
 
   /**
    * Convert to object.
    */
-  public toObject() {
+  public async toObject() {
     return {
       active: this.active,
       email: this.email,
       id: this.id,
       org: this.org,
-      password: this.password,
+      password: Utility.isHashed(this.password)
+        ? this.password
+        : await Utility.hashPassword({ password: this.password }),
       policy: this.policy.toObject(),
       username: this.username,
       srn: this.srn,

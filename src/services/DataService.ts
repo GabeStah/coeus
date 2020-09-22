@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest } from 'fastify';
 import config from 'config';
 import {
   AuthorizationPayloadType,
@@ -16,6 +16,7 @@ export interface DataServiceParams {
   db: string;
   collection: string;
   payload?: AuthorizationPayloadType;
+  request?: FastifyRequest;
 }
 
 export interface DataServiceDeleteParams {
@@ -50,9 +51,9 @@ export class DataService extends AuthorizationService {
 
   constructor(
     instance: FastifyInstance,
-    { db, collection, payload }: DataServiceParams
+    { db, collection, payload, request }: DataServiceParams
   ) {
-    super({ payload, service: 'data' });
+    super({ payload, request, service: 'data' });
     this.db = db;
     this.collection = collection;
     this.instance = instance;
@@ -90,7 +91,7 @@ export class DataService extends AuthorizationService {
 
     return {
       statusCode: 200,
-      message: `No documents deleted`
+      message: 'No documents deleted'
     };
   }
 

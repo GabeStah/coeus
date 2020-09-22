@@ -5,50 +5,30 @@ import {
   DataServiceFindParams,
   DataServiceParams
 } from 'src/services/DataService';
-import config from 'config';
 import { Utility } from 'src/helpers/Utility';
-import { schema } from 'src/schema';
+import schema from 'src/schema/data/find';
 
 const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.route<{
     Body: DataServiceParams & DataServiceFindParams;
   }>({
+    config: {
+      rateLimit: Utility.getRateLimitConfig()
+    },
     handler: async (request, reply) =>
       new DataService(instance, {
         db: request.body.db,
         collection: request.body.collection,
-        payload: request.payload
+        payload: request.payload,
+        request: request
       }).find({
         limit: request.body.limit,
         query: request.body.query,
         options: request.body.options
       }),
-    preValidation: [instance.verifyJwt],
     method: 'POST',
-    schema: {
-      body: {
-        type: 'object',
-        required: ['collection', 'db'],
-        properties: {
-          collection: schema.collection,
-          db: schema.db,
-          limit: {
-            type: ['number', 'null'],
-            default: config.get('db.thresholds.limit.base'),
-            minimum: config.get('db.thresholds.limit.minimum'),
-            maximum: config.get('db.thresholds.limit.maximum')
-          },
-          options: {
-            type: ['object', 'null'],
-            default: null
-          },
-          query: {
-            type: ['object', 'null'],
-            default: {}
-          }
-        }
-      }
-    },
+    preValidation: [instance.verifyJwt],
+    schema: schema,
     url: Utility.route(['data.prefix', 'data.find'])
   });
 };

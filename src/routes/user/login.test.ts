@@ -24,7 +24,7 @@ test('routes/user/login', async t => {
     );
   };
 
-  await t.test(`cannot login if user doesn't exist`, async t => {
+  await t.test('cannot login if user doesn\'t exist', async t => {
     const response = await getRequestResponse({
       payload: {
         username: 'foobar',
@@ -39,7 +39,7 @@ test('routes/user/login', async t => {
     });
   });
 
-  await t.test(`cannot login with invalid credentials`, async t => {
+  await t.test('cannot login with invalid credentials', async t => {
     const user = await UserTestHelper.create({
       app,
       user: User.fake({ active: true, verified: true })
@@ -61,7 +61,7 @@ test('routes/user/login', async t => {
     await UserTestHelper.delete({ app, user });
   });
 
-  await t.test(`cannot login if user email is not verified`, async t => {
+  await t.test('cannot login if user email is not verified', async t => {
     const user = await UserTestHelper.create({
       app,
       user: User.fake({ active: true, verified: false })
@@ -83,7 +83,7 @@ test('routes/user/login', async t => {
     await UserTestHelper.delete({ app, user });
   });
 
-  await t.test(`cannot login if user is inactive`, async t => {
+  await t.test('cannot login if user is inactive', async t => {
     const user = await UserTestHelper.create({
       app,
       user: User.fake({ active: false, verified: true })
@@ -105,7 +105,7 @@ test('routes/user/login', async t => {
     await UserTestHelper.delete({ app, user });
   });
 
-  await t.test(`can login with valid credentials`, async t => {
+  await t.test('can login with valid credentials', async t => {
     const user = await UserTestHelper.create({
       app,
       user: User.fake({ active: true, verified: true })
@@ -130,7 +130,7 @@ test('routes/user/login', async t => {
     await UserTestHelper.delete({ app, user });
   });
 
-  await t.test(`can login with token email generation`, async t => {
+  await t.test('can login with token email generation', async t => {
     const user = await UserTestHelper.create({
       app,
       user: User.fake({ active: true, verified: true })

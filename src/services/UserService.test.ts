@@ -12,20 +12,20 @@ test('AuthorizationService', async t => {
   // Await plugin / decorated injection
   await app.ready();
 
-  await t.test(`cannot delete not-existent user`, async t => {
+  await t.test('cannot delete not-existent user', async t => {
     const user = User.fake();
 
     const deleted = await UserTestHelper.delete({ app, user });
     t.strictEqual(deleted, true);
   });
 
-  await t.test(`login with invalid username`, async t => {
+  await t.test('login with invalid username', async t => {
     const user = User.fake();
 
     const responseRegister = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.register']),
-      payload: user.toObject()
+      payload: await user.toObject()
     });
 
     t.strictEqual(responseRegister.statusCode, 200);
@@ -50,13 +50,13 @@ test('AuthorizationService', async t => {
     await UserTestHelper.delete({ app, user });
   });
 
-  await t.test(`login with invalid password`, async t => {
+  await t.test('login with invalid password', async t => {
     const user = User.fake();
 
     const responseRegister = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.register']),
-      payload: user.toObject()
+      payload: await user.toObject()
     });
 
     t.strictEqual(responseRegister.statusCode, 200);
@@ -81,13 +81,15 @@ test('AuthorizationService', async t => {
     await UserTestHelper.delete({ app, user });
   });
 
-  await t.test(`user updatable`, async t => {
-    const user = User.fake();
+  await t.test('user updatable by _id', async t => {
+    const user = User.fake({
+      _id: '123456abcdef'
+    });
 
     const responseRegister = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.register']),
-      payload: user.toObject()
+      payload: await user.toObject()
     });
 
     t.strictEqual(responseRegister.statusCode, 200);
@@ -113,13 +115,45 @@ test('AuthorizationService', async t => {
     await UserTestHelper.delete({ app, user });
   });
 
-  await t.test(`update by id`, async t => {
+  await t.test('user updatable', async t => {
     const user = User.fake();
 
     const responseRegister = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.register']),
-      payload: user.toObject()
+      payload: await user.toObject()
+    });
+
+    t.strictEqual(responseRegister.statusCode, 200);
+    t.strictEqual(responseRegister.statusMessage, 'OK');
+    t.equivalent(responseRegister.json().message, 'User successfully created.');
+
+    const foundUsers = await new UserService(app).find({
+      query: { username: user.username }
+    });
+
+    const foundUser = foundUsers[0];
+
+    const updateResponse = await new UserService(app).update({
+      filter: { _id: new ObjectID(foundUser.id) },
+      update: { $set: { org: 'other' } }
+    });
+
+    t.equivalent(updateResponse, {
+      statusCode: 200,
+      message: 'User updated'
+    });
+
+    await UserTestHelper.delete({ app, user });
+  });
+
+  await t.test('update by id', async t => {
+    const user = User.fake();
+
+    const responseRegister = await TestHelper.inject(app, {
+      method: 'POST',
+      url: Utility.route(['user.prefix', 'user.register']),
+      payload: await user.toObject()
     });
 
     t.strictEqual(responseRegister.statusCode, 200);
@@ -144,13 +178,13 @@ test('AuthorizationService', async t => {
     await UserTestHelper.delete({ app, user });
   });
 
-  await t.test(`can verify valid user`, async t => {
+  await t.test('can verify valid user', async t => {
     const user = User.fake();
 
     const responseRegister = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.register']),
-      payload: user.toObject()
+      payload: await user.toObject()
     });
 
     t.strictEqual(responseRegister.statusCode, 200);
@@ -179,7 +213,7 @@ test('AuthorizationService', async t => {
     await UserTestHelper.delete({ app, user });
   });
 
-  await t.test(`cannot verify with invalid token`, async t => {
+  await t.test('cannot verify with invalid token', async t => {
     const response = await TestHelper.inject(app, {
       method: 'GET',
       url: Utility.route(['user.prefix', 'user.verify']),
@@ -195,13 +229,13 @@ test('AuthorizationService', async t => {
     });
   });
 
-  await t.test(`cannot verify with expired token`, async t => {
+  await t.test('cannot verify with expired token', async t => {
     const user = User.fake();
 
     const responseRegister = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.register']),
-      payload: user.toObject()
+      payload: await user.toObject()
     });
 
     t.strictEqual(responseRegister.statusCode, 200);

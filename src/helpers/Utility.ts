@@ -3,6 +3,9 @@ import config from 'config';
 import hash from 'object-hash';
 import crypto from 'crypto';
 import { FastifyRequest } from 'fastify';
+import { PolicyStatement } from 'src/models/PolicyStatement';
+import { Policy } from 'src/models/Policy';
+import { Constraint, MaxRequestsConstraint } from 'src/models/constraint/';
 
 /**
  * Utility helper class.
@@ -64,12 +67,102 @@ export class Utility {
   }
 
   /**
+   * Check if password value is hashed instance.
+   *
+   * @param value
+   */
+  public static isHashed(value: string) {
+    return value && value.length === 60 && value.substr(0, 7) === '$2a$10$';
+  }
+
+  /**
    * Determine if header indicates test environment.
    *
    * @param request
    */
   public static isTest(request: FastifyRequest) {
     return request.headers['x-source-type'] === 'test';
+  }
+
+  /**
+   * Get rate limit configuration.
+   */
+  public static getRateLimitConfig() {
+    return {
+      /**
+       * Generates unique key for rate limit tracking.
+       *
+       * Use payload id if specified, otherwise ip.
+       *
+       * @param request
+       */
+      keyGenerator: (
+        request: FastifyRequest<{
+          Body: { db?: string; collection?: string };
+        }>
+      ) => {
+        const payload = request.payload;
+        return payload && payload.id ? payload.id : request.ip;
+      },
+      /**
+       * Get max rate limit based on request payload constraints, or default
+       *
+       * @param request
+       */
+      max: (
+        request: FastifyRequest<{
+          Body: { db?: string; collection?: string };
+        }>
+      ) => {
+        const payload = request.payload;
+        if (payload) {
+          const serviceMethod = Utility.getServiceAndMethodFromRouterPath(
+            request.routerPath
+          );
+
+          const statements = PolicyStatement.find({
+            statements: new Policy(payload.policy).statement,
+            options: {
+              collection: request.body.collection,
+              db: request.body.db,
+              service: serviceMethod.service,
+              method: serviceMethod.method
+            }
+          });
+
+          if (Array.isArray(statements)) {
+            // Find max requests instance
+            for (const statement of statements) {
+              const constraints = Constraint.find<MaxRequestsConstraint>(
+                MaxRequestsConstraint,
+                statement.constraints
+              );
+              if (constraints) {
+                return constraints[0].value;
+              }
+            }
+          }
+        }
+
+        return config.get('rateLimit.maxRequests');
+      },
+      hookMethod: config.get('rateLimit.hookMethod'),
+      timeWindow: config.get('rateLimit.timeWindow')
+    };
+  }
+
+  /**
+   * Get service and method from router path
+   *
+   * @param path
+   */
+  public static getServiceAndMethodFromRouterPath(
+    path: string
+  ): { service: string; method: string } {
+    const [source, service, method] = path.match(
+      /^\/([A-Za-z0-9\-]+)\/([A-Za-z0-9\-]+)/
+    );
+    return { service, method };
   }
 
   /**

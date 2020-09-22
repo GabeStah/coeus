@@ -3,6 +3,7 @@ import { build } from 'src/app';
 import { User } from 'src/models/User';
 import { Utility } from 'src/helpers/Utility';
 import { TestHelper, UserTestHelper } from 'src/helpers/Test';
+import { UserService } from 'src/services/UserService';
 
 test('AuthorizationService', async t => {
   const app = build();
@@ -11,7 +12,7 @@ test('AuthorizationService', async t => {
 
   const route = Utility.route(['data.prefix', 'data.find']);
 
-  await t.test(`No valid PolicyStatement`, async t => {
+  await t.test('No valid PolicyStatement', async t => {
     const user = User.fake({ policy: { statement: [] } });
     await UserTestHelper.create({ app, user });
     const token = await UserTestHelper.login({
@@ -41,7 +42,7 @@ test('AuthorizationService', async t => {
   });
 
   await t.test(
-    `PolicyStatement with explicit denial (allow = false)`,
+    'PolicyStatement with explicit denial (allow = false)',
     async t => {
       const user = User.fake({
         policy: {
@@ -83,7 +84,7 @@ test('AuthorizationService', async t => {
     }
   );
 
-  await t.test(`Valid PolicyStatement for service.method`, async t => {
+  await t.test('Valid PolicyStatement for service.method', async t => {
     const user = User.fake({
       policy: {
         version: '1.1.0',
@@ -119,7 +120,7 @@ test('AuthorizationService', async t => {
     await UserTestHelper.delete({ app, user });
   });
 
-  await t.test(`No matching PolicyStatements`, async t => {
+  await t.test('No matching PolicyStatements', async t => {
     const user = User.fake({
       policy: {
         version: '1.1.0',

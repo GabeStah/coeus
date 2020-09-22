@@ -72,7 +72,7 @@ test('routes/data/insert', async t => {
     t.strictEqual(response.statusCode, 404, 'returns a status code of 404');
   });
 
-  await t.test(`without body fails`, async t => {
+  await t.test('without body fails', async t => {
     const response = await getRequestResponse();
     t.equivalent(response.json(), {
       statusCode: 400,
@@ -81,7 +81,7 @@ test('routes/data/insert', async t => {
     });
   });
 
-  await t.test(`with empty body`, async t => {
+  await t.test('with empty body', async t => {
     const response = await getRequestResponse({ payload: {} });
     t.equivalent(response.json(), {
       statusCode: 400,
@@ -90,7 +90,7 @@ test('routes/data/insert', async t => {
     });
   });
 
-  await t.test(`with body missing db`, async t => {
+  await t.test('with body missing db', async t => {
     const response = await getRequestResponse({
       payload: {
         collection: ''
@@ -103,7 +103,7 @@ test('routes/data/insert', async t => {
     });
   });
 
-  await t.test(`with empty db`, async t => {
+  await t.test('with empty db', async t => {
     const response = await getRequestResponse({
       payload: {
         collection: 'something',
@@ -118,7 +118,7 @@ test('routes/data/insert', async t => {
     });
   });
 
-  await t.test(`without document property`, async t => {
+  await t.test('without document property', async t => {
     const response = await getRequestResponse({
       payload: {
         collection: 'srn:coeus:acme::collection',
@@ -133,7 +133,7 @@ test('routes/data/insert', async t => {
     });
   });
 
-  await t.test(`with no document objects`, async t => {
+  await t.test('with no document objects', async t => {
     const response = await getRequestResponse({
       payload: {
         collection: 'srn:coeus:acme::collection',
@@ -149,7 +149,7 @@ test('routes/data/insert', async t => {
     });
   });
 
-  await t.test(`with valid collection, db, and single document`, async t => {
+  await t.test('with valid collection, db, and single document', async t => {
     const response = await getRequestResponse({
       payload: {
         collection: 'srn:coeus:acme::collection',
@@ -168,7 +168,7 @@ test('routes/data/insert', async t => {
     t.strictEqual(response.json().data.length, 1);
   });
 
-  await t.test(`with valid collection, db, and multiple documents`, async t => {
+  await t.test('with valid collection, db, and multiple documents', async t => {
     const response = await getRequestResponse({
       payload: {
         collection: 'srn:coeus:acme::collection',

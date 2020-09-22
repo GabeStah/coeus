@@ -6,12 +6,15 @@ import {
   DataServiceParams
 } from 'src/services/DataService';
 import { Utility } from 'src/helpers/Utility';
-import { schema } from 'src/schema';
+import schema from 'src/schema/data/insert';
 
 const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.route<{
     Body: DataServiceParams & DataServiceInsertParams;
   }>({
+    config: {
+      rateLimit: Utility.getRateLimitConfig()
+    },
     handler: async (request, reply) =>
       new DataService(instance, {
         db: request.body.db,
@@ -21,30 +24,9 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
         document: request.body.document,
         options: request.body.options
       }),
-    preValidation: [instance.verifyJwt],
     method: 'POST',
-    schema: {
-      body: {
-        type: 'object',
-        required: ['collection', 'db', 'document'],
-        properties: {
-          collection: schema.collection,
-          db: schema.db,
-          document: {
-            type: 'array',
-            items: {
-              type: 'object',
-              default: {}
-            },
-            minItems: 1
-          },
-          options: {
-            type: ['object', 'null'],
-            default: null
-          }
-        }
-      }
-    },
+    preValidation: [instance.verifyJwt],
+    schema: schema,
     url: Utility.route(['data.prefix', 'data.insert'])
   });
 };

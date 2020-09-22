@@ -7,12 +7,12 @@ test('helpers/Utility tests', async t => {
   // Await plugin / decorated injection
   await app.ready();
 
-  await t.test(`route(string)`, async t => {
+  await t.test('route(string)', async t => {
     const value = Utility.route('data.prefix');
     t.strictEqual(value, '/data');
   });
 
-  await t.test(`route(string[])`, async t => {
+  await t.test('route(string[])', async t => {
     const value = Utility.route(['data.prefix', 'data.find']);
     t.strictEqual(value, '/data/find');
   });

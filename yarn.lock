@@ -3727,6 +3727,15 @@ fastify-plugin@^2.3.2:
   dependencies:
     semver "^7.3.2"
 
+"fastify-rate-limit@git://github.com/GabeStah/fastify-rate-limit/#add-fastify-hook-method-setting":
+  version "4.0.2"
+  resolved "git://github.com/GabeStah/fastify-rate-limit/#f3f2493e87dc49e9ef4fdfe178455d2cab16c798"
+  dependencies:
+    fast-json-stringify "^2.2.1"
+    fastify-plugin "^2.0.0"
+    ms "^2.1.1"
+    tiny-lru "^7.0.0"
+
 fastify-request-context@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/fastify-request-context/-/fastify-request-context-2.1.1.tgz#293e61106ff2efe81c517351ed894f16edca1bc7"

@@ -6,12 +6,15 @@ import {
   DataServiceParams
 } from 'src/services/DataService';
 import { Utility } from 'src/helpers/Utility';
-import { schema } from 'src/schema';
+import schema from 'src/schema/data/delete';
 
 const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.route<{
     Body: DataServiceParams & DataServiceDeleteParams;
   }>({
+    config: {
+      rateLimit: Utility.getRateLimitConfig()
+    },
     handler: async (request, reply) =>
       new DataService(instance, {
         db: request.body.db,
@@ -21,26 +24,9 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
         filter: request.body.filter,
         options: request.body.options
       }),
-    preValidation: [instance.verifyJwt],
     method: 'POST',
-    schema: {
-      body: {
-        type: 'object',
-        required: ['collection', 'db', 'filter'],
-        properties: {
-          collection: schema.collection,
-          db: schema.db,
-          filter: {
-            type: 'object',
-            default: {}
-          },
-          options: {
-            type: ['object', 'null'],
-            default: null
-          }
-        }
-      }
-    },
+    preValidation: [instance.verifyJwt],
+    schema: schema,
     url: Utility.route(['data.prefix', 'data.delete'])
   });
 };

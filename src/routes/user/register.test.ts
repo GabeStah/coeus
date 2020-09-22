@@ -9,13 +9,13 @@ test('routes/user/register', async t => {
   // Await plugin / decorated injection
   await app.ready();
 
-  await t.test(`can register`, async t => {
+  await t.test('can register', async t => {
     const user = User.fake();
 
     const response = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.register']),
-      payload: user.toObject()
+      payload: await user.toObject()
     });
 
     t.strictEqual(response.statusCode, 200);
@@ -25,14 +25,14 @@ test('routes/user/register', async t => {
     await UserTestHelper.delete({ app, user });
   });
 
-  await t.test(`cannot register with duplicate username`, async t => {
+  await t.test('cannot register with duplicate username', async t => {
     const userA = User.fake();
     const userB = User.fake({ username: userA.username });
 
     const responseA = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.register']),
-      payload: userA.toObject()
+      payload: await userA.toObject()
     });
 
     t.strictEqual(responseA.statusCode, 200);
@@ -42,7 +42,7 @@ test('routes/user/register', async t => {
     const responseB = await TestHelper.inject(app, {
       method: 'POST',
       url: Utility.route(['user.prefix', 'user.register']),
-      payload: userB.toObject()
+      payload: await userB.toObject()
     });
 
     t.equivalent(responseB.json(), {
