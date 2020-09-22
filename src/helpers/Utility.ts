@@ -6,6 +6,8 @@ import { FastifyRequest } from 'fastify';
 import { PolicyStatement } from 'src/models/PolicyStatement';
 import { Policy } from 'src/models/Policy';
 import { Constraint, MaxRequestsConstraint } from 'src/models/constraint/';
+import { map, isArray, isObject, isPlainObject, mapValues } from 'lodash';
+import { ObjectID } from 'mongodb';
 
 /**
  * Utility helper class.
@@ -163,6 +165,63 @@ export class Utility {
       /^\/([A-Za-z0-9\-]+)\/([A-Za-z0-9\-]+)/
     );
     return { service, method };
+  }
+
+  /**
+   * Deeply, recursively map values of object.
+   *
+   * @author https://github.com/Kikobeats
+   * @source https://github.com/Kikobeats/map-values-deep
+   *
+   * @param obj
+   * @param fn
+   * @param key
+   */
+  public static mapValuesDeep(
+    obj: object,
+    fn: (value: any, key: string | number) => any,
+    key?: string | number
+  ): any {
+    if (isArray(obj)) {
+      return map(obj, (innerObj, idx) => {
+        return this.mapValuesDeep(innerObj, fn, idx);
+      });
+    } else {
+      if (isPlainObject(obj)) {
+        return mapValues(obj, (val, key) => {
+          return this.mapValuesDeep(val, fn, key);
+        });
+      } else {
+        if (isObject(obj)) {
+          return obj;
+        } else {
+          return fn(obj, key);
+        }
+      }
+    }
+  }
+
+  /**
+   * Normalize query parameters.
+   *
+   * Replaces _id and ObjectId/ObjectID references with BSON-compatible
+   * ObjectID objects.
+   *
+   * @param obj
+   */
+  public static normalizeQueryObject(obj: any) {
+    const objectIdRegex = /^ObjectI[dD]\(['"]([\w\d]+)['"]\)/;
+    return Utility.mapValuesDeep(obj, (value: any, key: string | number) => {
+      if (typeof value === 'string') {
+        if (value.match(objectIdRegex)) {
+          const matches = value.match(objectIdRegex);
+          return new ObjectID(matches[1]);
+        } else if (key === '_id') {
+          return new ObjectID(value);
+        }
+      }
+      return value;
+    });
   }
 
   /**

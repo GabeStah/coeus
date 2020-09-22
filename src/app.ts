@@ -1,4 +1,5 @@
-import fastify, { FastifyInstance } from 'fastify';
+import fastify, { FastifyInstance, FastifyRequest } from 'fastify';
+import pino from 'pino';
 import authentication from 'src/plugins/authentication';
 import mongo from 'src/plugins/db/mongo';
 import rateLimiter from 'src/plugins/rate-limiter';
@@ -12,7 +13,22 @@ import { fastifyRequestContextPlugin } from 'fastify-request-context';
 
 export function build() {
   const instance: FastifyInstance = fastify({
-    logger: false
+    logger: pino({
+      level: 'info',
+      redact: ['req.headers.authorization'],
+      serializers: {
+        req(req: FastifyRequest) {
+          return {
+            method: req.method,
+            url: req.url,
+            headers: req.headers,
+            hostname: req.hostname,
+            remoteAddress: req.ip,
+            remotePort: req.connection.remotePort
+          };
+        }
+      }
+    })
   });
 
   // Compression

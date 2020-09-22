@@ -11,6 +11,7 @@ import {
   FindOneOptions,
   UpdateManyOptions
 } from 'mongodb';
+import { Utility } from 'src/helpers/Utility';
 
 export interface DataServiceParams {
   db: string;
@@ -78,7 +79,7 @@ export class DataService extends AuthorizationService {
     const result = await this.instance.mongo.client
       .db(this.db)
       .collection(this.collection)
-      .deleteMany(filter, options);
+      .deleteMany(Utility.normalizeQueryObject(filter), options);
 
     if (result.deletedCount > 0) {
       return {
@@ -115,7 +116,7 @@ export class DataService extends AuthorizationService {
     const result = await this.instance.mongo.client
       .db(this.db)
       .collection(this.collection)
-      .find(query, options)
+      .find(Utility.normalizeQueryObject(query), options)
       .limit(limit)
       .maxTimeMS(config.get('db.thresholds.timeout.maximum'));
 
@@ -173,7 +174,7 @@ export class DataService extends AuthorizationService {
     const result = await this.instance.mongo.client
       .db(this.db)
       .collection(this.collection)
-      .updateMany(filter, update, options);
+      .updateMany(Utility.normalizeQueryObject(filter), update, options);
 
     return {
       statusCode: 200,

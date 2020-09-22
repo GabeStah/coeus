@@ -237,7 +237,7 @@ export class UserService extends AuthorizationService {
     const result = await this.instance.mongo.client
       .db(this.db)
       .collection(this.collection)
-      .find(query, options)
+      .find(Utility.normalizeQueryObject(query), options)
       .maxTimeMS(config.get('db.thresholds.timeout.maximum'));
 
     const data = await result.toArray();
@@ -304,7 +304,7 @@ export class UserService extends AuthorizationService {
     const result = await this.instance.mongo.client
       .db(this.db)
       .collection(this.collection)
-      .updateOne(filter, update, options);
+      .updateOne(Utility.normalizeQueryObject(filter), update, options);
 
     return {
       statusCode: 200,
