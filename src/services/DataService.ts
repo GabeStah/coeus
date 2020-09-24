@@ -9,6 +9,8 @@ import {
   CollectionInsertManyOptions,
   CommonOptions,
   FindOneOptions,
+  IndexOptions,
+  ReadPreferenceMode,
   UpdateManyOptions
 } from 'mongodb';
 import { Utility } from 'src/helpers/Utility';
@@ -20,15 +22,30 @@ export interface DataServiceParams {
   request?: FastifyRequest;
 }
 
+export interface DataServiceCreateIndexParams {
+  fieldOrSpec: object | string;
+  options?: IndexOptions;
+}
+
 export interface DataServiceDeleteParams {
   filter: object;
   options?: CommonOptions;
+}
+
+export interface DataServiceDropIndexParams {
+  indexName: string;
+  options?: IndexOptions;
 }
 
 export interface DataServiceFindParams {
   limit?: number;
   query?: object;
   options?: FindOneOptions<any>;
+}
+
+export interface DataServiceListIndexesParams {
+  batchSize?: number;
+  readPreference?: ReadPreferenceMode;
 }
 
 export interface DataServiceInsertParams {
@@ -58,6 +75,37 @@ export class DataService extends AuthorizationService {
     this.db = db;
     this.collection = collection;
     this.instance = instance;
+  }
+
+  /**
+   * Create an index in db.collection.
+   *
+   * @see https://docs.mongodb.com/manual/reference/method/db.collection.createIndex/
+   * @see http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#createIndex
+   * @see https://docs.mongodb.com/manual/indexes/#index-types
+   *
+   * @param fieldOrSpec
+   * @param options
+   */
+  public async createIndex({
+    fieldOrSpec,
+    options
+  }: DataServiceCreateIndexParams) {
+    this.authorize({
+      collection: this.collection,
+      db: this.db,
+      method: 'createIndex'
+    });
+
+    const result = await this.instance.mongo.client
+      .db(this.db)
+      .collection(this.collection)
+      .createIndex(fieldOrSpec, options);
+
+    return {
+      statusCode: 200,
+      message: `'${result}' index created on '${this.db}.${this.collection}'`
+    };
   }
 
   /**
@@ -97,6 +145,33 @@ export class DataService extends AuthorizationService {
   }
 
   /**
+   * Drop an index from db.collection.
+   *
+   * @see https://docs.mongodb.com/manual/reference/method/db.collection.dropIndex/
+   * @see http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#dropIndex
+   *
+   * @param indexName
+   * @param options
+   */
+  public async dropIndex({ indexName, options }: DataServiceDropIndexParams) {
+    this.authorize({
+      collection: this.collection,
+      db: this.db,
+      method: 'dropIndex'
+    });
+
+    await this.instance.mongo.client
+      .db(this.db)
+      .collection(this.collection)
+      .dropIndex(indexName, options);
+
+    return {
+      statusCode: 200,
+      message: `'${indexName}' index dropped from '${this.db}.${this.collection}'`
+    };
+  }
+
+  /**
    * Find documents by query and options.
    *
    * @see https://docs.mongodb.com/manual/reference/method/db.collection.find/
@@ -121,6 +196,34 @@ export class DataService extends AuthorizationService {
       .maxTimeMS(config.get('db.thresholds.timeout.maximum'));
 
     return result.toArray();
+  }
+
+  /**
+   * List all indexes for db.collection
+   *
+   * @see https://docs.mongodb.com/manual/reference/method/db.collection.listIndexes/
+   * @see http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#listIndexes
+   * @see https://docs.mongodb.com/manual/indexes/#index-types
+   */
+  public async listIndexes(options: DataServiceListIndexesParams) {
+    this.authorize({
+      collection: this.collection,
+      db: this.db,
+      method: 'listIndexes'
+    });
+
+    const result = await this.instance.mongo.client
+      .db(this.db)
+      .collection(this.collection)
+      .listIndexes(options);
+
+    const data = await result.toArray();
+
+    return {
+      statusCode: 200,
+      message: `${data.length} indexes found on '${this.db}.${this.collection}'`,
+      data: await result.toArray()
+    };
   }
 
   /**

@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest } from 'fastify';
 import config from 'config';
 import { Utility } from 'src/helpers/Utility';
 import { User } from 'src/models/User';
@@ -20,6 +20,7 @@ export interface IPrivilege {
 
 export interface UserServiceParams {
   payload?: AuthorizationPayloadType;
+  request: FastifyRequest;
 }
 
 export interface UserServiceActivateParams {
@@ -73,8 +74,8 @@ export class UserService extends AuthorizationService {
   private readonly collection: string;
 
   constructor(instance: FastifyInstance, params?: UserServiceParams) {
-    const { payload } = params || {};
-    super({ payload, service: 'user' });
+    const { payload, request } = params || {};
+    super({ payload, request, service: 'user' });
     this.db = 'coeus';
     this.collection = 'users';
     this.instance = instance;

@@ -11,7 +11,7 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
       rateLimit: Utility.getRateLimitConfig()
     },
     handler: async (request, reply) =>
-      new UserService(instance).verify({
+      new UserService(instance, { request }).verify({
         token: request.query.token
       }),
     method: 'GET',

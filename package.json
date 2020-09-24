@@ -66,7 +66,7 @@
     "start:production": "cross-env NODE_ENV=production node dist/server.js",
     "test": "tap -t 0 --node-arg=--require=tsconfig-paths/register \"src/**/*.test.ts\"",
     "test:coverage": "tap -t 0 --coverage-report=lcov --node-arg=--require=tsconfig-paths/register \"src/**/*.test.ts\"",
-    "test:current": "tap -t 0 --node-arg=--require=tsconfig-paths/register \"src/services/AuthorizationService.test.ts\"",
+    "test:current": "tap -t 0 --node-arg=--require=tsconfig-paths/register \"src/routes/data/update.test.ts\"",
     "test:debug": "tap -t 0 --node-arg=--require=tsconfig-paths/register --debug \"src/**/*.test.ts\"",
     "test:watch": "tap --reporter=list --watch --node-arg=--require=tsconfig-paths/register \"src/**/*.test.ts\"",
     "test:watch:debug": "tap --reporter=list --watch --node-arg=--require=tsconfig-paths/register --debug \"src/**/*.test.ts\"",

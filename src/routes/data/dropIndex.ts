@@ -2,15 +2,15 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 import {
   DataService,
-  DataServiceParams,
-  DataServiceUpdateParams
+  DataServiceDropIndexParams,
+  DataServiceParams
 } from 'src/services/DataService';
 import { Utility } from 'src/helpers/Utility';
-import schema from 'src/schema/data/update';
+import schema from 'src/schema/data/dropIndex';
 
 const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.route<{
-    Body: DataServiceParams & DataServiceUpdateParams;
+    Body: DataServiceParams & DataServiceDropIndexParams;
   }>({
     config: {
       rateLimit: Utility.getRateLimitConfig()
@@ -21,19 +21,18 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
         collection: request.body.collection,
         payload: request.payload,
         request
-      }).update({
-        filter: request.body.filter,
-        options: request.body.options,
-        update: request.body.update
+      }).dropIndex({
+        indexName: request.body.indexName,
+        options: request.body.options
       }),
     method: 'POST',
     preValidation: [instance.verifyJwt],
     schema: schema,
-    url: Utility.route(['data.prefix', 'data.update'])
+    url: Utility.route(['data.prefix', 'data.dropIndex'])
   });
 };
 
 export default fp(plugin, {
   fastify: '3.3.x',
-  name: `routes${Utility.route(['data.prefix', 'data.update'])}`
+  name: `routes${Utility.route(['data.prefix', 'data.dropIndex'])}`
 });

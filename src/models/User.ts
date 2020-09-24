@@ -95,7 +95,7 @@ export class User implements IUser {
       hash: await this.toHash(),
       id: this.id,
       org: this.org,
-      policy: this.policy,
+      policy: this.policy.toObject(),
       srn: this.srn,
       username: this.username
     };

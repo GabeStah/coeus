@@ -16,7 +16,8 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
     },
     handler: async (request, reply) => {
       const user = await new UserService(instance, {
-        payload: request.payload
+        payload: request.payload,
+        request
       }).activate({
         id: request.body.id,
         srn: request.body.srn,

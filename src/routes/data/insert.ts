@@ -19,7 +19,8 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
       new DataService(instance, {
         db: request.body.db,
         collection: request.body.collection,
-        payload: request.payload
+        payload: request.payload,
+        request
       }).insert({
         document: request.body.document,
         options: request.body.options

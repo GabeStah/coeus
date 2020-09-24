@@ -15,7 +15,7 @@ export function build() {
   const instance: FastifyInstance = fastify({
     logger: pino({
       level: 'info',
-      redact: ['req.headers.authorization'],
+      redact: ['req.headers.authorization', 'body.password'],
       serializers: {
         req(req: FastifyRequest) {
           return {
@@ -29,6 +29,13 @@ export function build() {
         }
       }
     })
+  });
+
+  instance.addHook('preHandler', function(req, reply, done) {
+    if (req.body) {
+      req.log.info({ payload: req.payload, body: req.body }, 'request content');
+    }
+    done();
   });
 
   // Compression

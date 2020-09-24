@@ -12,7 +12,9 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
       rateLimit: Utility.getRateLimitConfig()
     },
     handler: async (request, reply) => {
-      const response = new UserService(instance).login({
+      const response = new UserService(instance, {
+        request
+      }).login({
         email: request.body.email,
         password: request.body.password,
         username: request.body.username

@@ -42,51 +42,6 @@ export class Utility {
   }
 
   /**
-   * Hash the passed data.
-   *
-   * @param data
-   */
-  public static hash(data: any) {
-    return hash(data);
-  }
-
-  /**
-   * Hash salted password.
-   *
-   * @param password
-   * @param iterations
-   * @private
-   */
-  public static async hashPassword({
-    password,
-    iterations = 10
-  }: {
-    password: string;
-    iterations?: number;
-  }) {
-    const salt = await bcrypt.genSalt(iterations);
-    return bcrypt.hash(password, salt);
-  }
-
-  /**
-   * Check if password value is hashed instance.
-   *
-   * @param value
-   */
-  public static isHashed(value: string) {
-    return value && value.length === 60 && value.substr(0, 7) === '$2a$10$';
-  }
-
-  /**
-   * Determine if header indicates test environment.
-   *
-   * @param request
-   */
-  public static isTest(request: FastifyRequest) {
-    return request.headers['x-source-type'] === 'test';
-  }
-
-  /**
    * Get rate limit configuration.
    */
   public static getRateLimitConfig() {
@@ -165,6 +120,51 @@ export class Utility {
       /^\/([A-Za-z0-9\-]+)\/([A-Za-z0-9\-]+)/
     );
     return { service, method };
+  }
+
+  /**
+   * Hash the passed data.
+   *
+   * @param data
+   */
+  public static hash(data: any) {
+    return hash(data);
+  }
+
+  /**
+   * Hash salted password.
+   *
+   * @param password
+   * @param iterations
+   * @private
+   */
+  public static async hashPassword({
+    password,
+    iterations = 10
+  }: {
+    password: string;
+    iterations?: number;
+  }) {
+    const salt = await bcrypt.genSalt(iterations);
+    return bcrypt.hash(password, salt);
+  }
+
+  /**
+   * Check if password value is hashed instance.
+   *
+   * @param value
+   */
+  public static isHashed(value: string) {
+    return value && value.length === 60 && value.substr(0, 7) === '$2a$10$';
+  }
+
+  /**
+   * Determine if header indicates test environment.
+   *
+   * @param request
+   */
+  public static isTest(request: FastifyRequest) {
+    return request.headers['x-source-type'] === 'test';
   }
 
   /**

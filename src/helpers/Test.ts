@@ -3,7 +3,9 @@ import { User } from 'src/models/User';
 import { UserService } from 'src/services/UserService';
 import { Utility } from 'src/helpers/Utility';
 import {
+  DataServiceCreateIndexParams,
   DataServiceDeleteParams,
+  DataServiceDropIndexParams,
   DataServiceInsertParams,
   DataServiceParams
 } from 'src/services/DataService';
@@ -28,17 +30,18 @@ export const TestHelper = {
 };
 
 export const DataTestHelper = {
-  insert: async ({
+  createIndex: async ({
     app,
     db,
     collection,
-    document,
+    fieldOrSpec,
     options
-  }: { app: FastifyInstance } & DataServiceParams & DataServiceInsertParams) =>
-    await app.mongo.client
+  }: { app: FastifyInstance } & DataServiceParams &
+    DataServiceCreateIndexParams) =>
+    app.mongo.client
       .db(db)
       .collection(collection)
-      .insertMany(document, options),
+      .createIndex(fieldOrSpec, options),
   delete: async ({
     app,
     db,
@@ -49,7 +52,30 @@ export const DataTestHelper = {
     app.mongo.client
       .db(db)
       .collection(collection)
-      .deleteMany(filter, options)
+      .deleteMany(filter, options),
+  dropIndex: async ({
+    app,
+    db,
+    collection,
+    indexName,
+    options
+  }: { app: FastifyInstance } & DataServiceParams &
+    DataServiceDropIndexParams) =>
+    app.mongo.client
+      .db(db)
+      .collection(collection)
+      .dropIndex(indexName, options),
+  insert: async ({
+    app,
+    db,
+    collection,
+    document,
+    options
+  }: { app: FastifyInstance } & DataServiceParams & DataServiceInsertParams) =>
+    await app.mongo.client
+      .db(db)
+      .collection(collection)
+      .insertMany(document, options)
   // find: async ({
   //   app,
   //   db,
