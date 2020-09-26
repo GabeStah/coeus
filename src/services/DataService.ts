@@ -6,6 +6,7 @@ import {
 } from 'src/services/AuthorizationService';
 import values from 'lodash/values';
 import {
+  CollectionAggregationOptions,
   CollectionInsertManyOptions,
   CommonOptions,
   FindOneOptions,
@@ -20,6 +21,12 @@ export interface DataServiceParams {
   collection: string;
   payload?: AuthorizationPayloadType;
   request?: FastifyRequest;
+}
+
+export interface DataServiceAggregateParams {
+  limit?: number;
+  pipeline: Array<object>;
+  options?: CollectionAggregationOptions;
 }
 
 export interface DataServiceCreateIndexParams {
@@ -75,6 +82,38 @@ export class DataService extends AuthorizationService {
     this.db = db;
     this.collection = collection;
     this.instance = instance;
+  }
+
+  /**
+   * Calculates aggregate values for the data in a collection.
+   *
+   * @see https://docs.mongodb.com/manual/reference/method/db.collection.aggregate/
+   * @see http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#aggregate
+   * @see https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/
+   *
+   * @param limit
+   * @param pipeline
+   * @param options
+   */
+  public async aggregate({
+    limit,
+    pipeline,
+    options
+  }: DataServiceAggregateParams) {
+    this.authorize({
+      collection: this.collection,
+      db: this.db,
+      method: 'aggregate'
+    });
+
+    const result = await this.instance.mongo.client
+      .db(this.db)
+      .collection(this.collection)
+      .aggregate(pipeline, options)
+      .limit(limit)
+      .maxTimeMS(config.get('db.thresholds.timeout.maximum'));
+
+    return result.toArray();
   }
 
   /**

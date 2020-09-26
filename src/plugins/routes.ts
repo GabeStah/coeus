@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify/fastify';
 import fp from 'fastify-plugin';
+import dataAggregate from 'src/routes/data/aggregate';
 import dataCreateIndex from 'src/routes/data/createIndex';
 import dataDelete from 'src/routes/data/delete';
 import dataDropIndex from 'src/routes/data/dropIndex';
@@ -14,6 +15,7 @@ import userVerify from 'src/routes/user/verify';
 import status from 'src/routes/status';
 
 const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
+  fastify.register(dataAggregate);
   fastify.register(dataCreateIndex);
   fastify.register(dataDelete);
   fastify.register(dataDropIndex);

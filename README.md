@@ -58,19 +58,32 @@ In Greek mythology [Coeus](https://en.wikipedia.org/wiki/Coeus) is the son of Ur
   - [14.1. Limits](#141-limits)
   - [14.2. Timeout](#142-timeout)
   - [14.3. Query Normalization](#143-query-normalization)
-    - [14.3.1. _id and BSON ObjectIds](#1431-_id-and-bson-objectids)
-  - [14.4. /data/find](#144-datafind)
-    - [14.4.1. /data/find Schema](#1441-datafind-schema)
-    - [14.4.2. /data/find Request Example](#1442-datafind-request-example)
-  - [14.5. /data/insert](#145-datainsert)
-    - [14.5.1. /data/insert Schema](#1451-datainsert-schema)
-    - [14.5.2. /data/insert Request Example](#1452-datainsert-request-example)
+    - [14.3.1. \_id and BSON ObjectIds](#1431-_id-and-bson-objectids)
+  - [14.4. /data/aggregate](#144-dataaggregate)
+    - [14.4.1. /data/aggregate Schema](#1441-dataaggregate-schema)
+    - [14.4.2. /data/aggregate Request Examples](#1442-dataaggregate-request-examples)
+    - [14.4.3. See Also](#1443-see-also)
+  - [14.5. /data/createIndex](#145-datacreateindex)
+    - [14.5.1. /data/createIndex Schema](#1451-datacreateindex-schema)
+    - [14.5.2. /data/createIndex Request Examples](#1452-datacreateindex-request-examples)
   - [14.6. /data/delete](#146-datadelete)
     - [14.6.1. /data/delete Schema](#1461-datadelete-schema)
     - [14.6.2. /data/delete Request Example](#1462-datadelete-request-example)
-  - [14.7. /data/update](#147-dataupdate)
-    - [14.7.1. /data/update Schema](#1471-dataupdate-schema)
-    - [14.7.2. /data/update Request Example](#1472-dataupdate-request-example)
+  - [14.7. /data/dropIndex](#147-datadropindex)
+    - [14.7.1. /data/dropIndex Schema](#1471-datadropindex-schema)
+    - [14.7.2. /data/dropIndex Request Examples](#1472-datadropindex-request-examples)
+  - [14.8. /data/find](#148-datafind)
+    - [14.8.1. /data/find Schema](#1481-datafind-schema)
+    - [14.8.2. /data/find Request Example](#1482-datafind-request-example)
+  - [14.9. /data/insert](#149-datainsert)
+    - [14.9.1. /data/insert Schema](#1491-datainsert-schema)
+    - [14.9.2. /data/insert Request Example](#1492-datainsert-request-example)
+  - [14.10. /data/listIndexes](#1410-datalistindexes)
+    - [14.10.1. /data/listIndexes Schema](#14101-datalistindexes-schema)
+    - [14.10.2. /data/listIndexes Request Examples](#14102-datalistindexes-request-examples)
+  - [14.11. /data/update](#1411-dataupdate)
+    - [14.11.1. /data/update Schema](#14111-dataupdate-schema)
+    - [14.11.2. /data/update Request Example](#14112-dataupdate-request-example)
 - [15. TODO](#15-todo)
   - [15.1. Compression](#151-compression)
   - [15.2. In-Memory Cache of User Data](#152-in-memory-cache-of-user-data)
@@ -268,7 +281,7 @@ If results are similar in production, a target maximum of `500 req/sec` across t
 
 # 6. Rate Limits
 
-Rate limiting is based on a [forked version](https://github.com/GabeStah/fastify-rate-limit/tree/add-fastify-hook-method-setting) of `fastify-rate-limit`.  The fork is necessary to allow rate limiting to be executed at any point in the Fastify lifecycle.
+Rate limiting is based on a [forked version](https://github.com/GabeStah/fastify-rate-limit/tree/add-fastify-hook-method-setting) of `fastify-rate-limit`. The fork is necessary to allow rate limiting to be executed at any point in the Fastify lifecycle.
 
 ## 6.1. Global Rate Limits
 
@@ -281,7 +294,7 @@ Global rate limiting is defined in the `rateLimit` configuration options and beh
 
 ## 6.2. Policy-Based Rate Limits
 
-Each User Policy may define a `maxRequests` **Constraint**.  See [Policy Statement: Constraints](#9515-policy-statement-constraints) for details.
+Each User Policy may define a `maxRequests` **Constraint**. See [Policy Statement: Constraints](#9515-policy-statement-constraints) for details.
 
 # 7. Database: MongoDB
 
@@ -556,7 +569,7 @@ To authenticate a request to a protected endpoint the `Authorization` header mus
 
 ```bash
 $ curl --location --request POST 'http://localhost:8000/data/find' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3RpdmUiOmZhbHNlLCJlbWFpbCI6ImpvaG5AYWNtZS5jb20iLCJvcmciOiJhY21lIiwicHJpdmlsZWdlcyI6W3sicmVzb3VyY2UiOnsiZGIiOiJhY21lIiwiY29sbGVjdGlvbiI6InNybjpjb2V1czphY21lOjpjb2xsZWN0aW9uIn0sImFjdGlvbnMiOiJmaW5kIn0seyJyZXNvdXJjZSI6eyJkYiI6InNvbGFyaXgiLCJjb2xsZWN0aW9uIjoic3JuOmNvZXVzOnNvbGFyaXg6OmNvbGxlY3Rpb24ifSwiYWN0aW9ucyI6ImZpbmQifV0sInNybiI6InNybjpjb2V1czphY21lOjp1c2VyL2pvaG5zbWl0aCIsInVzZXJuYW1lIjoiam9obnNtaXRoIiwiaWF0IjoxNTk5MDk0ODk5LCJpc3MiOiJjb2V1cy5zb2xhcml4LnRvb2xzIn0.73dnMmj1g2_gVS5rrlIcUT2MZgp7JjWZo9vbQyDas2c' \
+--header 'Authorization: Bearer <JWT>' \
 --header 'Content-Type: application/json' \
 --data-raw '{
   "collection": "srn:coeus:acme::collection",
@@ -603,13 +616,13 @@ Each `hash` value contains the hashed value of the matching User's relevant data
 
 During JWT verification within a **protected** endpoint the payload's `hash` is compared to the in-memory hashmap value. A match indicates that the passed JWT is up-to-date and can be trusted, while a mismatch indicates that the JWT is out of date and should be denied.
 
-The local cached User hashmap is updated anytime User db data is generated or updated. This allows Coeus to maintain real-time JWT validation without making unnecessary database calls on every request.
+The local cached User hashmap is updated whenever Coeus is initialized, or anytime User db data is generated or updated. This allows Coeus to maintain real-time JWT validation without making unnecessary database calls on every request.
 
 ## 10.5. Authorization
 
 The passed JWT is decoded and evaluated to determine the privileges assigned to the User based on the User's **Policy** object.
 
-In general, authorization is based on a combination of **four** properties:
+In general, authorization is based on a combination of **four** primary properties:
 
 - `service`: The service that is handling the request. For example, a request to a `/data/*` endpoint uses the [DataService](src/services/DataService.ts).
 - `method`: The service method that is handling the request. For example, a request to the `/data/find` endpoint is processed by the [routes/data/find](src/routes/data/find.ts) plugin, which passes the validated request to the [DataService.find()](src/services/DataService.ts#L94) method for authorization.
@@ -677,11 +690,11 @@ An example **PolicyStatement** with **Constraints** defined:
   "constraints": [
     {
       "type": "maxRequests",
-      "value": 60,
+      "value": 60
     },
     {
       "type": "ip",
-      "value": ["127.0.0.1"],
+      "value": ["127.0.0.1"]
     },
     {
       "type": "hostname",
@@ -693,17 +706,17 @@ An example **PolicyStatement** with **Constraints** defined:
 
 ##### 10.5.1.5.1. MaxRequestsConstraint
 
-A **MaxRequestsConstraint** determines the maximum number of requests matching the **statement** that can be made within the `rateLimit.timeWindow` period (default: 60 seconds).  This value *overrides* the global value and is specific to the matching User and PolicyStatement.
+A **MaxRequestsConstraint** determines the maximum number of requests matching the **statement** that can be made within the `rateLimit.timeWindow` period (default: 60 seconds). This value _overrides_ the global value and is specific to the matching User and PolicyStatement.
 
 ##### 10.5.1.5.2. IpConstraint
 
-A **IpConstraint** determines which requesting IP address(es) are allowed for requests matching the **statement**.  The `value` _MUST_ be a string or array of strings, each containing a valid IP address.
+A **IpConstraint** determines which requesting IP address(es) are allowed for requests matching the **statement**. The `value` _MUST_ be a string or array of strings, each containing a valid IP address.
 
 If the matching **statement** contains an **IpConstraint**, the requesting IP address _MUST_ match one of the values or the request is denied.
 
 ##### 10.5.1.5.3. HostnameConstraint
 
-A **HostnameConstraint** determines which requesting hostname(s) are allowed for requests matching the **statement**.  The `value` _MUST_ be a string or array of strings, each containing a valid hostname _without_ a port (e.g. `localhost` or `example.com` are valid, `localhost:8000` or `example.com:80` are invalid).
+A **HostnameConstraint** determines which requesting hostname(s) are allowed for requests matching the **statement**. The `value` _MUST_ be a string or array of strings, each containing a valid hostname _without_ a port (e.g. `localhost` or `example.com` are valid, `localhost:8000` or `example.com:80` are invalid).
 
 If the matching **statement** contains an **HostnameConstraint**, the requesting hostname _MUST_ match one of the values or the request is denied.
 
@@ -841,9 +854,9 @@ By default, Coeus restricts all requests to under `5000` milliseconds. This valu
 
 ## 14.3. Query Normalization
 
-MongoDB uses a JSON-like format called [BSON](https://www.mongodb.com/json-and-bson) which provides numerous advantages.  However, certain value types require pre-processing before they can be used in a query.
+MongoDB uses a JSON-like format called [BSON](https://www.mongodb.com/json-and-bson) which provides numerous advantages. However, certain value types require pre-processing before they can be used in a query.
 
-### 14.3.1. _id and BSON ObjectIds
+### 14.3.1. \_id and BSON ObjectIds
 
 When writing a Coeus API query or filter that uses a MongoDB `_id` you _MUST_ use one of two formats for related fields/values:
 
@@ -860,7 +873,7 @@ When writing a Coeus API query or filter that uses a MongoDB `_id` you _MUST_ us
 }
 ```
 
-- **`ObjectID('value')` string value**: More complex queries that require the use of an ObjectID value _MUST_ surround the intended string value with `ObjectID('')`.  Coeus will automatically parse such values and convert them into BSON `ObjectID` instances:
+- **`ObjectID('value')` string value**: More complex queries that require the use of an ObjectID value _MUST_ surround the intended string value with `ObjectID('')`. Coeus will automatically parse such values and convert them into BSON `ObjectID` instances:
 
 ```json
 {
@@ -875,7 +888,365 @@ When writing a Coeus API query or filter that uses a MongoDB `_id` you _MUST_ us
 }
 ```
 
-## 14.4. /data/find
+## 14.4. /data/aggregate
+
+The `/data/aggregate` endpoint allows for complex, multi-stage data operations. Each [stage](https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/) passes its result document(s) to the next stage. In combination with various [built-in operators](https://docs.mongodb.com/manual/reference/operator/aggregation/) data can be analyzed and aggregated in many ways.
+
+The body _MUST_ contain:
+
+- `db`: The database name to query.
+- `collection`: The collection name within the database to query.
+- `pipeline`: MongoDB-compatible array of objects defining as series of [pipeline stages](https://docs.mongodb.com/manual/aggregation/#aggregation-pipeline).
+
+The body _MAY_ contain:
+
+- `limit`: Maximum number of documents to return.
+- `options`: MongoDB-compatible object defining aggregate options.
+
+See [MongoDb Collection.aggregate()](http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#aggregate) for parameter option details.
+
+### 14.4.1. /data/aggregate Schema
+
+```js
+const schema = {
+  body: {
+    type: 'object',
+    required: ['collection', 'db', 'pipeline'],
+    properties: {
+      collection: {
+        $id: 'collection',
+        type: 'string',
+        minLength: 4,
+        maxLength: 190
+      },
+      db: {
+        $id: 'db',
+        type: 'string',
+        minLength: 4,
+        maxLength: 64,
+        pattern: '^(?!coeus).+'
+      },
+      limit: {
+        type: ['number', 'null'],
+        default: config.get('db.thresholds.limit.base'),
+        minimum: config.get('db.thresholds.limit.minimum'),
+        maximum: config.get('db.thresholds.limit.maximum')
+      },
+      pipeline: {
+        type: 'array',
+        uniqueItems: true,
+        default: [],
+        items: {
+          type: 'object'
+        }
+      },
+      options: {
+        type: ['object', 'null'],
+        default: null
+      }
+    }
+  }
+};
+```
+
+### 14.4.2. /data/aggregate Request Examples
+
+**Example**: Count the number of documents which contain have a complex key of `site.subscription.user.email` equal to `gabe@solarixdigital.com`:
+
+```json
+{
+  "collection": "srn:coeus:wcasg:widget:dashboard::collection",
+  "db": "wcasg",
+  "pipeline": [
+    {
+      "$match": {
+        "site.subscription.user.email": "gabe@solarixdigital.com"
+      }
+    },
+    {
+      "$count": "siteCount"
+    }
+  ]
+}
+```
+
+**Response**:
+
+```json
+[
+  {
+    "siteCount": 20
+  }
+]
+```
+
+**Example**: For the above matching documents sum the total of all `requestBytes` fields:
+
+```json
+{
+  "collection": "srn:coeus:wcasg:widget:dashboard::collection",
+  "db": "wcasg",
+  "pipeline": [
+    {
+      "$match": {
+        "site.subscription.user.email": "gabe@solarixdigital.com"
+      }
+    },
+    {
+      "$group": {
+        "_id": 1,
+        "totalBytes": {
+          "$sum": "$requestBytes"
+        }
+      }
+    }
+  ]
+}
+```
+
+**Response**:
+
+```json
+[
+  {
+    "_id": 1,
+    "totalBytes": 3852448
+  }
+]
+```
+
+### 14.4.3. See Also
+
+- [MongoDB Aggregation Documentation](https://docs.mongodb.com/manual/aggregation/)
+- [Aggregation Pipeline Stages](https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/)
+- [Aggregation Pipeline Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/)
+
+## 14.5. /data/createIndex
+
+Create indexes used for fast `/data/find` queries and complex pagination.
+
+The body _MUST_ contain:
+
+- `db`: The database name to query.
+- `collection`: The collection name within the database to query.
+- `fieldOrSpec`: MongoDB-compatible `object` or `string` defining the field or document combination of fields to index.
+
+The body _MAY_ contain:
+
+- `options`: MongoDB-compatible object defining createIndex options.
+
+See [MongoDb Collection.createIndex()](http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#createIndex) for parameter option details.
+
+### 14.5.1. /data/createIndex Schema
+
+```js
+const schema = {
+  body: {
+    type: 'object',
+    required: ['collection', 'db', 'fieldOrSpec'],
+    properties: {
+      collection: Collection,
+      db: Database,
+      fieldOrSpec: {
+        type: ['object', 'string'],
+        default: null
+      },
+      options: {
+        type: ['object', 'null'],
+        default: null
+      }
+    }
+  }
+};
+```
+
+### 14.5.2. /data/createIndex Request Examples
+
+**Example**: Create simple, single-field index by passing a string with the field name:
+
+```json
+{
+  "collection": "srn:coeus:acme::collection",
+  "db": "acme",
+  "fieldOrSpec": "active"
+}
+```
+
+**Response**:
+
+```json
+{
+  "statusCode": 200,
+  "message": "'active_1' index created on 'acme.srn:coeus:acme::collection'"
+}
+```
+
+**Example**: Create a compound index for the `name` and `email` fields. The `email` key's direction is reversed by specifying a `-1` value:
+
+```json
+{
+  "collection": "srn:coeus:acme::collection",
+  "db": "acme",
+  "fieldOrSpec": {
+    "name": 1,
+    "email": -1
+  }
+}
+```
+
+**Response**:
+
+```json
+{
+  "statusCode": 200,
+  "message": "'name_1_email_-1' index created on 'acme.srn:coeus:acme::collection'"
+}
+```
+
+## 14.6. /data/delete
+
+To delete one or more documents send a `POST` request to the `/data/delete` endpoint.
+
+The body _MUST_ contain:
+
+- `db`: The database name to access.
+- `collection`: The collection name within the database to access.
+- `filter`: MongoDB-compatible object defining the filter query on which to base deletion targets.
+
+The body _MAY_ contain:
+
+- `options`: MongoDB-compatible object defining method options.
+
+See [MongoDb Collection.deleteMany()](http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#deleteMany) for parameter option details.
+
+### 14.6.1. /data/delete Schema
+
+```js
+const schema = {
+  type: 'object',
+  required: ['collection', 'db', 'filter'],
+  properties: {
+    collection: schema.collection,
+    db: schema.db,
+    filter: {
+      type: 'object',
+      default: {}
+    },
+    options: {
+      type: ['object', 'null'],
+      default: null
+    }
+  }
+};
+```
+
+### 14.6.2. /data/delete Request Example
+
+**Example**: Delete all documents with a key `foo` value of `bar` within the `acme.srn:coeus:acme::collection` collection:
+
+```bash
+$ curl --location --request POST 'http://localhost:8000/data/delete' \
+--header 'Authorization: Bearer <JWT>' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "collection": "srn:coeus:acme::collection",
+  "db": "acme",
+  "filter": {
+    "foo": "bar"
+  }
+}'
+```
+
+**Response** indicates the number of deleted documents:
+
+```json
+{
+  "statusCode": 200,
+  "message": "1 document deleted"
+}
+```
+
+## 14.7. /data/dropIndex
+
+Delete an existing index within a db collection.
+
+The body _MUST_ contain:
+
+- `db`: The database name to query.
+- `collection`: The collection name within the database to query.
+- `indexName`: The exact name of the index to be deleted.
+
+The body _MAY_ contain:
+
+- `options`: MongoDB-compatible object defining dropIndex options.
+
+See [MongoDb Collection.dropIndex()](http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#dropIndex) for parameter option details.
+
+### 14.7.1. /data/dropIndex Schema
+
+```js
+const schema = {
+  body: {
+    type: 'object',
+    required: ['collection', 'db', 'indexName'],
+    properties: {
+      collection: Collection,
+      db: Database,
+      indexName: {
+        type: 'string',
+        minLength: 1
+      },
+      options: {
+        type: ['object', 'null']
+      }
+    }
+  }
+};
+```
+
+### 14.7.2. /data/dropIndex Request Examples
+
+**Example**: Remove an existing `active_1` index:
+
+```json
+{
+  "collection": "srn:coeus:acme::collection",
+  "db": "acme",
+  "indexName": "active_1"
+}
+```
+
+**Response**:
+
+```json
+{
+  "statusCode": 200,
+  "message": "'active_1' index dropped from 'acme.srn:coeus:acme::collection'"
+}
+```
+
+**Example**: Attempting to remove an index that doesn't exist returns an error:
+
+```json
+{
+  "collection": "srn:coeus:acme::collection",
+  "db": "acme",
+  "indexName": "active_1"
+}
+```
+
+**Response**:
+
+```json
+{
+  "statusCode": 500,
+  "code": "27",
+  "error": "Internal Server Error",
+  "message": "index not found with name [active_1]"
+}
+```
+
+## 14.8. /data/find
 
 To find one or more documents send a `POST` request to the `/data/find` endpoint.
 
@@ -892,7 +1263,7 @@ The body _MAY_ contain:
 
 See [MongoDb Collection.find()](http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#find) for parameter option details.
 
-### 14.4.1. /data/find Schema
+### 14.8.1. /data/find Schema
 
 ```js
 const schema = {
@@ -930,7 +1301,7 @@ const schema = {
 };
 ```
 
-### 14.4.2. /data/find Request Example
+### 14.8.2. /data/find Request Example
 
 **Example**: Perform a full text search for the term `Superman` within the `sample_mflix.movies` collection. Limit to a maximum of `5` documents:
 
@@ -1002,7 +1373,7 @@ $ curl --location --request POST 'http://localhost:8000/data/find' \
 ]
 ```
 
-## 14.5. /data/insert
+## 14.9. /data/insert
 
 To insert one or more documents send a `POST` request to the `/data/insert` endpoint.
 
@@ -1018,7 +1389,7 @@ The body _MAY_ contain:
 
 See [MongoDb Collection.insertMany()](http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#insertMany) for parameter option details.
 
-### 14.5.1. /data/insert Schema
+### 14.9.1. /data/insert Schema
 
 ```js
 const schema = {
@@ -1043,7 +1414,7 @@ const schema = {
 };
 ```
 
-### 14.5.2. /data/insert Request Example
+### 14.9.2. /data/insert Request Example
 
 **Example**: Insert 3 simple documents into the `acme.srn:coeus:acme::collection` collection:
 
@@ -1082,70 +1453,88 @@ $ curl --location --request POST 'http://localhost:8000/data/insert' \
 }
 ```
 
-## 14.6. /data/delete
+## 14.10. /data/listIndexes
 
-To delete one or more documents send a `POST` request to the `/data/delete` endpoint.
+Get all existing indexes within the db collection.
 
 The body _MUST_ contain:
 
-- `db`: The database name to access.
-- `collection`: The collection name within the database to access.
-- `filter`: MongoDB-compatible object defining the filter query on which to base deletion targets.
+- `db`: The database name to query.
+- `collection`: The collection name within the database to query.
 
 The body _MAY_ contain:
 
-- `options`: MongoDB-compatible object defining method options.
+- `batchSize`: The batchSize for the returned command cursor.
+- `readPreference`: The preferred read preference.
 
-See [MongoDb Collection.deleteMany()](http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#deleteMany) for parameter option details.
+See [MongoDb Collection.listIndexes()](http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#listIndexes) for parameter option details.
 
-### 14.6.1. /data/delete Schema
+### 14.10.1. /data/listIndexes Schema
 
 ```js
 const schema = {
-  type: 'object',
-  required: ['collection', 'db', 'filter'],
-  properties: {
-    collection: schema.collection,
-    db: schema.db,
-    filter: {
-      type: 'object',
-      default: {}
-    },
-    options: {
-      type: ['object', 'null'],
-      default: null
+  body: {
+    type: 'object',
+    required: ['collection', 'db'],
+    properties: {
+      batchSize: {
+        type: 'number'
+      },
+      collection: Collection,
+      db: Database,
+      readPreference: {
+        type: 'string',
+        enum: [
+          'primary',
+          'primaryPreferred',
+          'secondary',
+          'secondaryPreferred',
+          'nearest'
+        ]
+      }
     }
   }
 };
 ```
 
-### 14.6.2. /data/delete Request Example
+### 14.10.2. /data/listIndexes Request Examples
 
-**Example**: Delete all documents with a key `foo` value of `bar` within the `acme.srn:coeus:acme::collection` collection:
+**Example**: Retrieve all indexes in `acme.srn:coeus:acme::collection`:
 
-```bash
-$ curl --location --request POST 'http://localhost:8000/data/delete' \
---header 'Authorization: Bearer <JWT>' \
---header 'Content-Type: application/json' \
---data-raw '{
+```json
+{
   "collection": "srn:coeus:acme::collection",
-  "db": "acme",
-  "filter": {
-    "foo": "bar"
-  }
-}'
+  "db": "acme"
+}
 ```
 
-**Response** indicates the number of deleted documents:
+**Response**:
 
 ```json
 {
   "statusCode": 200,
-  "message": "1 document deleted"
+  "message": "2 indexes found on 'acme.srn:coeus:acme::collection'",
+  "data": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "name": 1,
+        "email": -1
+      },
+      "name": "name_1_email_-1"
+    }
+  ]
 }
 ```
 
-## 14.7. /data/update
+## 14.11. /data/update
 
 Update one or more documents by sending a `POST` request to the `/data/update` endpoint.
 
@@ -1162,7 +1551,7 @@ The body _MAY_ contain:
 
 See [MongoDb Collection.updateMany()](http://mongodb.github.io/node-mongodb-native/3.6/api/Collection.html#updateMany) for parameter option details.
 
-### 14.7.1. /data/update Schema
+### 14.11.1. /data/update Schema
 
 ```js
 const schema = {
@@ -1189,7 +1578,7 @@ const schema = {
 };
 ```
 
-### 14.7.2. /data/update Request Example
+### 14.11.2. /data/update Request Example
 
 **Example**: Update all documents with a `data` key value that matches the RegEx `^bar` (begins with 'bar') within the `acme.srn:coeus:acme::collection` collection. For all matched documents, set the `data` key value to `foo`:
 

@@ -183,7 +183,9 @@ export class Utility {
     key?: string | number
   ): any {
     if (isArray(obj)) {
+      /* istanbul ignore next */
       return map(obj, (innerObj, idx) => {
+        /* istanbul ignore next */
         return this.mapValuesDeep(innerObj, fn, idx);
       });
     } else {
