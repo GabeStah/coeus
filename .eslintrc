@@ -15,6 +15,14 @@
         "ignoreParameters": true
       }
     ],
-    "@typescript-eslint/no-unused-vars": "warn"
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/ban-types": [
+      "error", {
+        "types": {
+          "object": false,
+          "Object": false
+        }
+      }
+    ]
   }
 }

@@ -36,7 +36,7 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   /**
    * Update user hash map from db
    */
-  instance.decorate('updateUserHashMap', async function() {
+  instance.decorate('updateUserHashMap', async function () {
     const result = await new UserService(instance).find({ query: {} });
     const userHashMap: UserHashMap = {};
     for (const user of result) {
@@ -52,7 +52,7 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   });
 
   // Add JWT verification method to instance
-  instance.decorate('verifyJwt', async function(
+  instance.decorate('verifyJwt', async function (
     request: FastifyRequest,
     reply: FastifyReply
   ) {

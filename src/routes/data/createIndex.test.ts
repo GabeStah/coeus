@@ -80,7 +80,7 @@ test('routes/data/createIndex', async t => {
     t.equivalent(response.json(), {
       statusCode: 400,
       error: 'Bad Request',
-      message: "body should have required property 'collection'"
+      message: 'body should have required property \'collection\''
     });
   });
 
@@ -143,7 +143,7 @@ test('routes/data/createIndex', async t => {
 
     t.equivalent(response.json(), {
       statusCode: 200,
-      message: `'name_1' index created on 'acme.srn:coeus:acme::collection'`
+      message: '\'name_1\' index created on \'acme.srn:coeus:acme::collection\''
     });
 
     await DataTestHelper.dropIndex({
@@ -168,7 +168,7 @@ test('routes/data/createIndex', async t => {
 
     t.equivalent(response.json(), {
       statusCode: 200,
-      message: `'name_1_email_-1' index created on 'acme.srn:coeus:acme::collection'`
+      message: '\'name_1_email_-1\' index created on \'acme.srn:coeus:acme::collection\''
     });
 
     await DataTestHelper.dropIndex({

@@ -86,7 +86,7 @@ test('routes/data/insert', async t => {
     t.equivalent(response.json(), {
       statusCode: 400,
       error: 'Bad Request',
-      message: "body should have required property 'collection'"
+      message: 'body should have required property \'collection\''
     });
   });
 
@@ -129,7 +129,7 @@ test('routes/data/insert', async t => {
     t.equivalent(response.json(), {
       statusCode: 400,
       error: 'Bad Request',
-      message: "body should have required property 'document'"
+      message: 'body should have required property \'document\''
     });
   });
 

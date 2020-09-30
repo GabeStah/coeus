@@ -207,7 +207,7 @@ test('Constraint', async t => {
       t.equivalent(response.json(), {
         statusCode: 403,
         error: 'Forbidden',
-        message: `Invalid IP: Requests from 127.0.0.1 are not allowed by your Policy`
+        message: 'Invalid IP: Requests from 127.0.0.1 are not allowed by your Policy'
       });
 
       await UserTestHelper.delete({ app, user });
@@ -279,7 +279,7 @@ test('Constraint', async t => {
       t.equivalent(response.json(), {
         statusCode: 403,
         error: 'Forbidden',
-        message: `Invalid hostname: Requests from localhost:80 are not allowed by your Policy`
+        message: 'Invalid hostname: Requests from localhost:80 are not allowed by your Policy'
       });
 
       await UserTestHelper.delete({ app, user });

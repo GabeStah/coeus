@@ -132,6 +132,15 @@ $ curl -X POST "localhost:8000/status"
 1. Execute `yarn run watch` to monitor and rebuild on source changes.
 2. In a second console, execute `yarn run watch:server` to monitor build changes and restart the server.
 
+## TLS Certificate
+
+1. SSH to `coeus.solarix.dev`
+2. Renew via AWS Route53 DNS:
+
+```bash
+acme.sh --issue --dns dns_aws -d coeus.solarix.dev
+```
+
 # 3. Testing
 
 1. Create `*.test.ts` files under `src/`

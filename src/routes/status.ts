@@ -13,7 +13,7 @@ const plugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
       rateLimit: Utility.getRateLimitConfig()
     },
     handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      return { active: true, date: new Date() };
+      return { active: true, date: new Date(), status: 'success' };
     },
     method: ['GET', 'POST'],
     url: '/status'

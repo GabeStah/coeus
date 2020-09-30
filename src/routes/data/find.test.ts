@@ -87,7 +87,7 @@ test('routes/data/find', async t => {
     t.strictEqual(response.statusCode, 400);
     t.strictEqual(
       response.json().message,
-      "body should have required property 'collection'"
+      'body should have required property \'collection\''
     );
   });
 

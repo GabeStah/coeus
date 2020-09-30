@@ -80,7 +80,7 @@ test('routes/data/dropIndex', async t => {
     t.equivalent(response.json(), {
       statusCode: 400,
       error: 'Bad Request',
-      message: "body should have required property 'collection'"
+      message: 'body should have required property \'collection\''
     });
   });
 
@@ -163,7 +163,7 @@ test('routes/data/dropIndex', async t => {
 
     t.equivalent(response.json(), {
       statusCode: 200,
-      message: `'name_1' index dropped from 'acme.srn:coeus:acme::collection'`
+      message: '\'name_1\' index dropped from \'acme.srn:coeus:acme::collection\''
     });
   });
 

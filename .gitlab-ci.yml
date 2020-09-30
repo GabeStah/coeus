@@ -1,8 +1,5 @@
 image: node:alpine
 
-include:
-  - '/.deploy/templates/vault/install.yml'
-
 stages:
   - setup
   - build
@@ -16,71 +13,123 @@ stages:
 variables:
   # All
   REPOSITORY_URL: $CI_REPOSITORY_URL
+  TARGET_DIRECTORY: 'coeus'
 ### End Variables
+
+### Shared
+# Perform pre-script tasks
+.all_before_script: &all_before_script
+  - chmod +x ./.deploy/all/before_script.sh
+  - . ./.deploy/all/before_script.sh
+
+# Execute job stage script.
+.all_job_stage_script: &all_job_stage_script
+  - chmod +x ./.deploy/all/${CI_JOB_STAGE}.sh
+  - . ./.deploy/all/${CI_JOB_STAGE}.sh
+
+# Run simple health check on final URL
+.all_health_check_script: &all_health_check_script
+  # Delay is unnecessary for this app
+  #when: delayed
+  #start_in: 10 seconds
+  - chmod +x ./.deploy/all/healthcheck.sh
+  - . ./.deploy/all/healthcheck.sh
+### End Shared
 
 ### Testing
 .testing_template: &testing_template
-#  extends: .vault:install
-  ## Applies to all branches EXCEPT master
   only:
     - branches
   except:
     - master
+  variables:
+    DEPLOY_ENDPOINT: 'coeus.solarix.dev'
+    SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY_TESTING
   environment:
     name: testing
-  script:
-    - echo "${CI_JOB_STAGE} complete."
+    url: 'https://coeus.solarix.dev'
+  before_script:
+    - *all_before_script
 
 testing:setup:
   stage: setup
   <<: *testing_template
+  script:
+    - *all_job_stage_script
 
 testing:build:
   stage: build
   <<: *testing_template
+  script:
+    # Must be set here, as file-type variable expands to value when reassigned in 'variables' key.
+    # See: https://gitlab.com/gitlab-org/gitlab-runner/-/issues/1809
+    - CONFIG_FILE="${CONFIG_FILE_TESTING}"
+    - *all_job_stage_script
 
 testing:test:
   stage: test
   <<: *testing_template
+  script:
+    - *all_job_stage_script
 
 testing:deploy:
   stage: deploy
   <<: *testing_template
+  script:
+    - *all_job_stage_script
 
 testing:healthcheck:
   stage: healthcheck
   <<: *testing_template
+  script:
+    - *all_health_check_script
 ### End Testing
 
 ### Production
 .production_template: &production_template
-#  extends: .vault:install
   only:
     - master
+  variables:
+    DEPLOY_ENDPOINT: 'coeus.solarix.tools'
+    SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY_PRODUCTION
   environment:
     name: production
-  script:
-    - echo "${CI_JOB_STAGE} complete."
+    url: 'https://coeus.solarix.tools'
+  before_script:
+    - *all_before_script
 
 production:setup:
   stage: setup
   <<: *production_template
+  script:
+    - *all_job_stage_script
 
 production:build:
   stage: build
   <<: *production_template
+  script:
+    # Must be set here, as file-type variable expands to value when reassigned in 'variables' key.
+    # See: https://gitlab.com/gitlab-org/gitlab-runner/-/issues/1809
+    - CONFIG_FILE="${CONFIG_FILE_PRODUCTION}"
+    - *all_job_stage_script
 
 production:test:
   stage: test
   <<: *production_template
+  script:
+    - *all_job_stage_script
 
 production:deploy:
   stage: deploy
   <<: *production_template
+  script:
+    - *all_job_stage_script
 
 production:healthcheck:
   stage: healthcheck
   <<: *production_template
+  script:
+    - *all_health_check_script
 
 production:release:
   stage: release

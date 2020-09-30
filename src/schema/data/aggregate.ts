@@ -26,7 +26,9 @@ const schema: FastifySchema = {
       },
       options: {
         type: ['object', 'null'],
-        default: null
+        default: {
+          allowDiskUse: true
+        }
       }
     }
   }

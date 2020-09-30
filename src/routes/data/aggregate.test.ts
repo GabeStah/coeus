@@ -80,7 +80,7 @@ test('routes/data/aggregate', async t => {
     t.equivalent(response.json(), {
       statusCode: 400,
       error: 'Bad Request',
-      message: "body should have required property 'collection'"
+      message: 'body should have required property \'collection\''
     });
   });
 
