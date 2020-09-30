@@ -6,7 +6,7 @@ import nodemailer, { SentMessageInfo } from 'nodemailer';
 import NodeMail from 'nodemailer/lib/mailer';
 import { User } from 'src/models/User';
 
-export const getTokenAttachmentConfiguration = function({
+export const getTokenAttachmentConfiguration = function ({
   token,
   user
 }: {
@@ -22,7 +22,7 @@ export const getTokenAttachmentConfiguration = function({
   };
 };
 
-export const sendEmail = async function({
+export const sendEmail = async function ({
   instance,
   request,
   mailOptions
@@ -49,7 +49,7 @@ export const sendEmail = async function({
  * @param reply
  * @param next
  */
-export const sendOnActivationEmail = async function(
+export const sendOnActivationEmail = async function (
   request: FastifyRequest,
   reply: FastifyReply,
   next: any
@@ -88,7 +88,7 @@ export const sendOnActivationEmail = async function(
  * @param reply
  * @param next
  */
-export const sendTokenEmail = async function(
+export const sendTokenEmail = async function (
   request: FastifyRequest,
   reply: FastifyReply,
   next: any
@@ -132,7 +132,7 @@ export const sendTokenEmail = async function(
  * @param reply
  * @param next
  */
-export const sendOnVerificationEmail = async function(
+export const sendOnVerificationEmail = async function (
   request: FastifyRequest,
   reply: FastifyReply,
   next: any

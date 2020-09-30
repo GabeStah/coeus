@@ -56,7 +56,7 @@ const config = convict({
       address: {
         doc: 'Address mail is sent from',
         format: String,
-        default: 'coeus@solarix.tools',
+        default: 'dev@solarixdigital.com',
         env: 'MAIL_FROM_ADDRESS'
       },
       name: {
