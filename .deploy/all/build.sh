@@ -2,12 +2,14 @@
 
 # Compress src directory
 echo "Compressing ${ARCHIVE_FILENAME}"
-tar -zcf "${ARCHIVE_FILENAME}" . -C src/
+tar -zcf "${ARCHIVE_FILENAME}" .
 
 # Create target directory
 ssh -o StrictHostKeyChecking=no "${REMOTE_USER}@${DEPLOY_ENDPOINT}" << EOF
   echo "Creating target directory: ${TARGET_DIRECTORY}"
   mkdir -p ${TARGET_DIRECTORY}
+  cd ${TARGET_DIRECTORY}
+  mkdir -p config
 EOF
 
 # Transfer archive
