@@ -104,13 +104,17 @@ export class UserService extends AuthorizationService {
 
     // Error if no user
     if (!user) {
-      throw new HttpError.BadRequest(
+      throw new HttpError.Forbidden(
         `Could not find a user based on search params: ${JSON.stringify({
           id,
           srn,
           username
         })}`
       );
+    }
+
+    if (user.active) {
+      throw new HttpError.Forbidden(`User is already active`);
     }
 
     const result = await this.instance.mongo.client
@@ -291,7 +295,11 @@ export class UserService extends AuthorizationService {
     }
 
     // Sign and return JWT
-    return { token: await this.instance.jwt.sign(await user.toSignature()) };
+    return {
+      token: await this.instance.jwt.sign(await user.toSignature(), {
+        noTimestamp: true
+      })
+    };
   }
 
   /**
@@ -310,10 +318,7 @@ export class UserService extends AuthorizationService {
     return {
       statusCode: 200,
       message: `User ${
-        result.modifiedCount == 0
-          ? /* istanbul ignore next */
-            'not '
-          : ''
+        result.modifiedCount == 0 ? /* istanbul ignore next */ 'not ' : ''
       }updated`
     };
   }
@@ -337,10 +342,7 @@ export class UserService extends AuthorizationService {
     return {
       statusCode: 200,
       message: `User ${
-        result.modifiedCount == 0
-          ? /* istanbul ignore next */
-            'not '
-          : ''
+        result.modifiedCount == 0 ? /* istanbul ignore next */ 'not ' : ''
       }updated`
     };
   }
