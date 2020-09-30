@@ -12,6 +12,8 @@ stages:
 # See: https://gitlab.com/gitlab-org/gitlab-runner/-/issues/1809
 variables:
   # All
+  ARCHIVE_FILENAME: "$CI_JOB_ID-$CI_COMMIT_SHORT_SHA-package.tar.gz"
+  REMOTE_USER: ubuntu
   REPOSITORY_URL: $CI_REPOSITORY_URL
   TARGET_DIRECTORY: 'coeus'
 ### End Variables

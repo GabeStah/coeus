@@ -1,23 +1,34 @@
 #!/bin/sh
 
-# Update repo to build-flag, pull, install, and build app
-ssh -o StrictHostKeyChecking=no ubuntu@"${DEPLOY_ENDPOINT}" << EOF
+# Compress src directory
+echo "Compressing ${ARCHIVE_FILENAME}"
+tar -zcf "${ARCHIVE_FILENAME}" . -C src/
+
+# Create target directory
+ssh -o StrictHostKeyChecking=no "${REMOTE_USER}@${DEPLOY_ENDPOINT}" << EOF
+  echo "Creating target directory: ${TARGET_DIRECTORY}"
+  mkdir -p ${TARGET_DIRECTORY}
+EOF
+
+# Transfer archive
+echo "Transferring ${ARCHIVE_FILENAME}"
+scp -o StrictHostKeyChecking=no "${ARCHIVE_FILENAME}" "${REMOTE_USER}@${DEPLOY_ENDPOINT}:${TARGET_DIRECTORY}"
+
+# Extract archive
+ssh -o StrictHostKeyChecking=no "${REMOTE_USER}"@"${DEPLOY_ENDPOINT}" << EOF
   cd ${TARGET_DIRECTORY}
-  echo "Setting remote origin to '${REPOSITORY_URL}'."
-  git remote set-url origin ${REPOSITORY_URL}
-  git stash
-  echo "Pulling origin '${CI_COMMIT_REF_NAME}'."
-  git pull origin ${CI_COMMIT_REF_NAME}
-  echo "Checking out '${CI_COMMIT_REF_NAME}'."
-  git checkout ${CI_COMMIT_REF_NAME}
+  echo "Extracting ${ARCHIVE_FILENAME} to remote"
+  tar -zxf ${ARCHIVE_FILENAME}
+  echo "Removing ${ARCHIVE_FILENAME} from remote"
+  rm ${ARCHIVE_FILENAME}
 EOF
 
 # Transfer config file
 echo "Copying ${CONFIG_FILE} to /config/${CI_ENVIRONMENT_NAME}.json"
-scp -o StrictHostKeyChecking=no "${CONFIG_FILE}" "ubuntu@${DEPLOY_ENDPOINT}:${TARGET_DIRECTORY}/config/${CI_ENVIRONMENT_NAME}.json"
+scp -o StrictHostKeyChecking=no "${CONFIG_FILE}" "${REMOTE_USER}@${DEPLOY_ENDPOINT}:${TARGET_DIRECTORY}/config/${CI_ENVIRONMENT_NAME}.json"
 
 # Installing packages and building app.
-ssh -o StrictHostKeyChecking=no ubuntu@"${DEPLOY_ENDPOINT}" << EOF
+ssh -o StrictHostKeyChecking=no "${REMOTE_USER}@${DEPLOY_ENDPOINT}" << EOF
   cd ${TARGET_DIRECTORY}
   echo "Installing node modules."
   yarn install
