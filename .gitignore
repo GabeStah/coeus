@@ -224,4 +224,5 @@ temp/
 
 .notes/*
 config
+!src/config
 /.nyc_output/
