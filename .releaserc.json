@@ -1,6 +1,6 @@
 {
   "branches": ["master"],
-  "repositoryUrl": "git@gitlab.solarixdigital.com:solarix/core/soldata/coeus.git",
+  "repositoryUrl": "git@gitlab.solarixdigital.com:solarix/core/soldata/coeus-server.git",
   "plugins": [
     [
       "@semantic-release/commit-analyzer",
