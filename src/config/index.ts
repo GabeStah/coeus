@@ -243,24 +243,6 @@ const config = convict({
           env: 'SECURITY_JWT_VERIFY_ISSUER'
         }
       }
-    },
-    ssl: {
-      certificate: {
-        format: String,
-        default:
-          '/home/ubuntu/certs/coeus.solarix.tools/coeus.solarix.tools.cer',
-        sensitive: true
-      },
-      enabled: {
-        format: Boolean,
-        default: true
-      },
-      key: {
-        format: String,
-        default:
-          '/home/ubuntu/certs/coeus.solarix.tools/coeus.solarix.tools.key',
-        sensitive: true
-      }
     }
   },
   services: {
