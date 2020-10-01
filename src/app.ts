@@ -28,10 +28,13 @@ export function build() {
           };
         }
       }
-    })
+    }),
+    // Adds x-forwarded headers from Nginx proxy params
+    // Allows originating ip/host to be verified behind proxy
+    trustProxy: true
   });
 
-  instance.addHook('preHandler', function(req, reply, done) {
+  instance.addHook('preHandler', function (req, reply, done) {
     if (req.body) {
       req.log.info({ payload: req.payload, body: req.body }, 'request content');
     }
