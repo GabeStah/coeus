@@ -207,8 +207,8 @@ test('routes/user/activate', async t => {
     });
 
     t.equivalent(response.json(), {
-      statusCode: 400,
-      error: 'Bad Request',
+      statusCode: 403,
+      error: 'Forbidden',
       message: `Could not find a user based on search params: {"username":"${searchUsername}"}`
     });
 

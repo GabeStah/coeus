@@ -296,9 +296,7 @@ export class UserService extends AuthorizationService {
 
     // Sign and return JWT
     return {
-      token: await this.instance.jwt.sign(await user.toSignature(), {
-        noTimestamp: true
-      })
+      token: await this.instance.jwt.sign(await user.toSignature())
     };
   }
 

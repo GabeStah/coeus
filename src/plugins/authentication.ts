@@ -24,7 +24,8 @@ const plugin: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.register(fastifyJwt, {
     secret: config.get('security.jwt.secret'),
     sign: {
-      issuer: config.get('security.jwt.sign.issuer')
+      issuer: config.get('security.jwt.sign.issuer'),
+      noTimestamp: true
     },
     verify: {
       issuer: config.get('security.jwt.verify.issuer')

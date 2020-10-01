@@ -57,9 +57,7 @@ export const sendOnActivationEmail = async function (
   const user = this.requestContext.get('user');
 
   if (user && user.email && user.active && user.verified) {
-    const token = await this.jwt.sign(await user.toSignature(), {
-      noTimestamp: true
-    });
+    const token = await this.jwt.sign(await user.toSignature());
     const mailOptions: NodeMail.Options = {
       from: `"${config.get('mail.from.name')}" <${config.get(
         'mail.from.address'
@@ -103,9 +101,7 @@ export const sendTokenEmail = async function (
   const user = this.requestContext.get('user');
 
   if (user && user.email && user.active && user.verified) {
-    const token = await this.jwt.sign(await user.toSignature(), {
-      noTimestamp: true
-    });
+    const token = await this.jwt.sign(await user.toSignature());
     const mailOptions: NodeMail.Options = {
       from: `"${config.get('mail.from.name')}" <${config.get(
         'mail.from.address'
