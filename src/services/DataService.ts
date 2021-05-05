@@ -321,7 +321,7 @@ export class DataService extends AuthorizationService {
     return {
       statusCode: 200,
       message: `${result.modifiedCount} document${
-        result.modifiedCount > 1 ? 's' : ''
+        result.modifiedCount === 1 ? '' : 's'
       } updated`
     };
   }

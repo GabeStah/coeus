@@ -5,6 +5,7 @@ In Greek mythology [Coeus](https://en.wikipedia.org/wiki/Coeus) is the son of Ur
 - [1. Conventions and Terminology](#1-conventions-and-terminology)
 - [2. Development](#2-development)
   - [2.1. Dynamic Watches](#21-dynamic-watches)
+  - [2.2. TLS Certificate](#22-tls-certificate)
 - [3. Testing](#3-testing)
   - [3.1. Coverage](#31-coverage)
 - [4. Production](#4-production)
@@ -132,7 +133,7 @@ $ curl -X POST "localhost:8000/status"
 1. Execute `yarn run watch` to monitor and rebuild on source changes.
 2. In a second console, execute `yarn run watch:server` to monitor build changes and restart the server.
 
-## TLS Certificate
+## 2.2. TLS Certificate
 
 1. SSH to `coeus.solarix.dev`
 2. Renew via AWS Route53 DNS:
@@ -800,7 +801,7 @@ The following policy is intended for a Solarix `org` User with full administrati
 
 ## 12.1. WCASG Dashboard: Usage Stats
 
-> WCASG is to start collection some very basic user stats about their widget in WCASG Dashboard issue #75 and @gabestah must store that data. The database is already built, underwent customization stresses during development and may not perfectly fit the widget/dashboard model as if it was built from scratch. However, it must still report data to SolData on how many times a widget is loaded by a web browser. Perhaps @gabestah reads the future documentation about SolData API, integrates the database storage per the specific project best fit solutions and uses a provided snippet of php to run a cronjob to POST to webhook that will be processed & stored by SolData in a timely manner. @ksomerville is then able to visualize the pageview & bandwidth data at the end of the month to include on the customer invoices.
+> WCASG is to start collection some very basic user stats about their widget in WCASG Dashboard issue #75 and @gabestah must store that data. The database is already built, underwent customization stresses during development and may not perfectly fit the widget/dashboard model as if it was built from scratch. However, it must still report data to SolData on how many times a widget is loaded by a web browser. Perhaps @gabestah reads the future documentation about SolData API, integrates the database storage per the specific project best fit solutions and uses a provided snippet of php to run a cronjob to POST to webhook that will be processed & stored by SolData in a timely manner. johndoe is then able to visualize the pageview & bandwidth data at the end of the month to include on the customer invoices.
 
 - **database**: `wcasg`
 - **collection**: `srn:coeus:wcasg::collection`
@@ -814,15 +815,15 @@ The following policy is intended for a Solarix `org` User with full administrati
 
 ## 12.2. Acme Logistics: Fruit
 
-> bettyDoe at Acme Logistics asks @ksomerville to create a small app for her logistics company that transports fruit from regional farms. The client will require a database that stores information such as fruits, client profiles, farm asset profiles, current deliveries, sales amounts and a wide variety of other points. He refers to internal developer documentation and the basic API it offers so that the company's data can be easily submitted and eventually visualized in a report. He then writes a small script that submits some of that data to the SolData web service daily. @ksomerville then creates a visualization to automate weekly and sends the client an email with only the week's sales numbers and number of deliveries.
+> bettyDoe at Acme Logistics asks johndoe to create a small app for her logistics company that transports fruit from regional farms. The client will require a database that stores information such as fruits, client profiles, farm asset profiles, current deliveries, sales amounts and a wide variety of other points. He refers to internal developer documentation and the basic API it offers so that the company's data can be easily submitted and eventually visualized in a report. He then writes a small script that submits some of that data to the SolData web service daily. johndoe then creates a visualization to automate weekly and sends the client an email with only the week's sales numbers and number of deliveries.
 
 ## 12.3. Strapi CMS
 
-> charlieDoe wants Solarix to make a website for his pallet processing & storage business. His request is for a simple brochure website with an single dynamic page that displays the status of each pallet in his warehouse so that his customers know the current progress on their job. @ksomerville reads up on documentation requiremeents and there are a few starter databases in template repos to fork from, so he chooses to include the MongoDB starter with Strapi headless client. He writes his project, including the brochure/business content in the website attached to the CMS and giving the the customer access to the Strapi dashboard to update pallet info as needed. The MongoDB fork was already modeled to be structured in the preferred way SolData dictates and the Strapi repo included a snippet to add a POST to SolData web service whenever Strapi data is saved.
+> charlieDoe wants Solarix to make a website for his pallet processing & storage business. His request is for a simple brochure website with an single dynamic page that displays the status of each pallet in his warehouse so that his customers know the current progress on their job. johndoe reads up on documentation requiremeents and there are a few starter databases in template repos to fork from, so he chooses to include the MongoDB starter with Strapi headless client. He writes his project, including the brochure/business content in the website attached to the CMS and giving the the customer access to the Strapi dashboard to update pallet info as needed. The MongoDB fork was already modeled to be structured in the preferred way SolData dictates and the Strapi repo included a snippet to add a POST to SolData web service whenever Strapi data is saved.
 
 ## 12.4. Salesforce: CSV
 
-> deniseDoe has a large customer database from Salesforce exported to csv and she want's it accessible via a JSON rest API in the future. @ksomerville visits an internal Solarix tool that triggers a process that: imports the CSV > SolData creates an EAV model table to store that data and saves it > SolData then allows that data to be accessed via REST API to those who have access to that asset.
+> deniseDoe has a large customer database from Salesforce exported to csv and she want's it accessible via a JSON rest API in the future. johndoe visits an internal Solarix tool that triggers a process that: imports the CSV > SolData creates an EAV model table to store that data and saves it > SolData then allows that data to be accessed via REST API to those who have access to that asset.
 
 # 13. API
 
@@ -1655,8 +1656,7 @@ Generate `hash` when:
 
 ## 15.7. CORS Support
 
-- Add CORS support.
-- Integrate with `PolicyStatement` `ip` / `hostname` properties.
+- [x] Add CORS support.
 
 ## 15.8. /user/register Option: email
 
@@ -1687,7 +1687,7 @@ Generate `hash` when:
 
 ## 15.13. Request Option: email
 
-- Email address to send results to. Requires background worker system.
+- [x] Email address to send results to. Requires background worker system.
 
 ## 15.14. Benchmarking
 
