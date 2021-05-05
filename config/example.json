@@ -11,11 +11,19 @@
       }
     }
   },
-  "port": 8000,
   "routes": {
     "root": "http://127.0.0.1:8000"
   },
   "security": {
+    "jwt": {
+      "secret": "<secret>",
+      "sign": {
+        "issuer": "example.com"
+      },
+      "verify": {
+        "issuer": "example.com"
+      }
+    },
     "ssl": {
       "enabled": false
     }

@@ -5,7 +5,6 @@ In Greek mythology [Coeus](https://en.wikipedia.org/wiki/Coeus) is the son of Ur
 - [1. Conventions and Terminology](#1-conventions-and-terminology)
 - [2. Development](#2-development)
   - [2.1. Dynamic Watches](#21-dynamic-watches)
-  - [2.2. TLS Certificate](#22-tls-certificate)
 - [3. Testing](#3-testing)
   - [3.1. Coverage](#31-coverage)
 - [4. Production](#4-production)
@@ -116,7 +115,7 @@ The key words _MUST_, _MUST NOT_, _REQUIRED_, _SHALL_, _SHALL NOT_, _SHOULD_, _S
 # 2. Development
 
 1. Install Node modules: `yarn install`
-2. Copy `config/example.json` to `environment.json`, replacing `environment` with the appropriate environment name (e.g. `development.json`). See [snippets/development.json](https://gitlab.solarixdigital.com/solarix/core/soldata/coeus/snippets/20) for functional example.
+2. Copy `config/example.json` to `environment.json`, replacing `environment` with the appropriate environment name (e.g. `development.json`).
 3. Update the configuration file with appropriate values.
 4. Make code changes under `src/`
 5. Build dist package from TypeScript with `yarn run build`
@@ -132,15 +131,6 @@ $ curl -X POST "localhost:8000/status"
 
 1. Execute `yarn run watch` to monitor and rebuild on source changes.
 2. In a second console, execute `yarn run watch:server` to monitor build changes and restart the server.
-
-## 2.2. TLS Certificate
-
-1. SSH to `coeus.solarix.dev`
-2. Renew via AWS Route53 DNS:
-
-```bash
-acme.sh --issue --dns dns_aws -d coeus.solarix.dev
-```
 
 # 3. Testing
 
@@ -342,7 +332,7 @@ Each **collection** _MUST_:
 
 - be self-contained.
 - contain related data.
-- use [Solarix Resource Name (SRN)](https://docs.solarix.tools/solarix-resource-names) conventions.
+- use [Solarix Resource Name (SRN)](https://hermes.gabewyatt.com/solarix-resource-names) conventions.
 
 Each **collection** _SHOULD_:
 
@@ -430,7 +420,7 @@ Each **User** _MUST_ contain:
 
 - `username`: To allow for multiple users per email, `username` is the **primary unique value** for differentiating users.
 - `email`
-- `org`: Organization name, per the [Solarix Resource Name (SRN)](https://docs.solarix.tools/solarix-resource-names/) conventions.
+- `org`: Organization name, per the [Solarix Resource Name (SRN)](https://hermes.gabewyatt.com/solarix-resource-names/) conventions.
 - `password`
 
 Each **User** _SHOULD_ contain:
@@ -534,7 +524,7 @@ If the username and password are correct and the User is `active` and `verified`
 
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3RpdmUiOmZhbHNlLCJlbWFpbCI6ImpvaG5AYWNtZS5jb20iLCJvcmciOiJhY21lIiwicHJpdmlsZWdlcyI6W3sicmVzb3VyY2UiOnsiZGIiOiJhY21lIiwiY29sbGVjdGlvbiI6InNybjpjb2V1czphY21lOjpjb2xsZWN0aW9uIn0sImFjdGlvbnMiOiJmaW5kIn0seyJyZXNvdXJjZSI6eyJkYiI6InNvbGFyaXgiLCJjb2xsZWN0aW9uIjoic3JuOmNvZXVzOnNvbGFyaXg6OmNvbGxlY3Rpb24ifSwiYWN0aW9ucyI6ImZpbmQifV0sInNybiI6InNybjpjb2V1czphY21lOjp1c2VyL2pvaG5zbWl0aCIsInVzZXJuYW1lIjoiam9obnNtaXRoIiwiaWF0IjoxNTk5MDk0ODk5LCJpc3MiOiJjb2V1cy5zb2xhcml4LnRvb2xzIn0.73dnMmj1g2_gVS5rrlIcUT2MZgp7JjWZo9vbQyDas2c"
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3RpdmUiOmZhbHNlLCJlbWFpbCI6ImpvaG5AYWNtZS5jb20iLCJvcmiOiJhY21lIiwicHJpdmlsZWdlcyI6W3sicmVzb3VyY2UiOnsiZGIiOiJhY21lIiwiY29sbGVjdGlvbiI6InNybjpjb2V1czphY21lOjpjb2xsZWN0aW9uIn0sImFjdGlvbnMiOiJmaW5kIn0seyJyZXNvdXJjZSI6eyJkYiI6InNvbGFyaXgiLCJjb2xsZWN0aW9uIjoic3JuOmNvZXVzOnNvbGFyaXg6OmNvbGxlY3Rpb24ifSwiYWN0aW9ucyI6ImZpbmQifV0sInNybiI6InNybjpjb2V1czphY21lOjp1c2VyL2pvaG5zbWl0aCIsInVzZXJuYW1lIjoiam9obnNtaXRoIwiaWF0IjoxNTk5MDk0ODk5LCJpc3MiOiJjb2V1cy5zb2xhcml4LnRvb2xzIn0.73dnMmj1g2_gVS5rrlIcUT2MZgp7JjWZo9vbQyDas2c"
 }
 ```
 
@@ -600,11 +590,11 @@ The content of the JWT payload is trustworthy and authenticates the defined User
 
 ```json
 {
-  "5f5f35bceb2bfe1b0c5fab57": "2176dc31c298ae2a1b88409158402596d2fda788",
-  "5f5f3611a897730f002fbf0f": "5f39ac60b004857da58afbd29e2ec6f8d38a65c2",
+  "5f5f35bceb2bfe1b0c5fab57": "2176dc31c298aea1b88409158402596d2fda788",
+  "5f5f3611a897730f002fbf0f": "5f39ac60b00487da58afbd29e2ec6f8d38a65c2",
   "5f600bc48496ae4e6091f648": "0ad2768804d4d6c96d8a14b75bc12839693e28a9",
-  "5f60160c42b3c361103fab6e": "1c6ce905339e03c91e15b561fdcaff23e7fbe3dd",
-  "5f601764ecdb2d584868scce": "b334a2cd2f35462561ea380c9a1eed694d50606a"
+  "5f60160c42b3c361103fab6e": "1c6ce905339e0c91e15b561fdcaff23e7fbe3dd",
+  "5f601764ecdb2d584868scce": "b334a2cd2f3542561ea380c9a1eed694d50606a"
 }
 ```
 
