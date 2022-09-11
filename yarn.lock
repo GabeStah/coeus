@@ -3792,9 +3792,9 @@ fastify-plugin@^2.3.2:
   dependencies:
     semver "^7.3.2"
 
-"fastify-rate-limit@git://github.com/GabeStah/fastify-rate-limit/#add-fastify-hook-method-setting":
+fastify-rate-limit@gabestah/fastify-rate-limit:
   version "4.0.2"
-  resolved "git://github.com/GabeStah/fastify-rate-limit/#f3f2493e87dc49e9ef4fdfe178455d2cab16c798"
+  resolved "https://codeload.github.com/gabestah/fastify-rate-limit/tar.gz/fc09c5d075027f6f930ab591b7bc8d3538f7e646"
   dependencies:
     fast-json-stringify "^2.2.1"
     fastify-plugin "^2.0.0"
