@@ -114,7 +114,7 @@ export class UserService extends AuthorizationService {
     }
 
     if (user.active) {
-      throw new HttpError.Forbidden(`User is already active`);
+      throw new HttpError.Forbidden('User is already active');
     }
 
     const result = await this.instance.mongo.client

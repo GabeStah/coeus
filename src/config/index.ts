@@ -56,15 +56,21 @@ const config = convict({
       address: {
         doc: 'Address mail is sent from.',
         format: String,
-        default: 'dev@solarixdigital.com',
+        default: 'noreply@pingpub.dev',
         env: 'MAIL_FROM_ADDRESS'
       },
       name: {
         doc: 'Name of from sender',
         format: String,
-        default: 'Solarix Coeus',
+        default: 'Coeus Admin',
         env: 'MAIL_FROM_NAME'
       }
+    },
+    transport: {
+      doc: 'Mail transport method.',
+      format: ['sendgrid', 'ses'],
+      default: 'sendgrid',
+      env: 'MAIL_TRANSPORT'
     }
   },
   policy: {
@@ -232,14 +238,14 @@ const config = convict({
       sign: {
         issuer: {
           format: String,
-          default: 'coeus.solarix.tools',
+          default: 'coeus.pingpub.dev',
           env: 'SECURITY_JWT_SIGN_ISSUER'
         }
       },
       verify: {
         issuer: {
           format: String,
-          default: 'coeus.solarix.tools',
+          default: 'coeus.pingpub.dev',
           env: 'SECURITY_JWT_VERIFY_ISSUER'
         }
       }
@@ -308,6 +314,14 @@ const config = convict({
           default: 'us-west-2',
           env: 'AWS_SES_REGION'
         }
+      }
+    },
+    sendgrid: {
+      apiKey: {
+        doc: 'SendGrid API key',
+        format: String,
+        default: '',
+        env: 'SENDGRID_API_KEY'
       }
     }
   },

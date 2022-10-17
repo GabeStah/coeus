@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import nodemailer from 'nodemailer';
 import ses from 'aws-sdk/clients/ses';
 import config from 'config';
+import sendgridMailer from '@sendgrid/mail';
 
 export async function mailers(fastify: FastifyInstance) {
   fastify.decorate(
@@ -15,6 +16,10 @@ export async function mailers(fastify: FastifyInstance) {
       })
     })
   );
+
+  sendgridMailer.setApiKey(config.get('services.sendgrid.apiKey'));
+
+  fastify.decorate('sendgridMailer', sendgridMailer);
 
   const testAccount = await nodemailer.createTestAccount();
 

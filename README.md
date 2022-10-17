@@ -951,16 +951,16 @@ const schema = {
 
 ### 14.4.2. /data/aggregate Request Examples
 
-**Example**: Count the number of documents which contain have a complex key of `site.subscription.user.email` equal to `gabe@solarixdigital.com`:
+**Example**: Count the number of documents which contain have a complex key of `site.subscription.user.email` equal to `gabe@gabewyatt.com`:
 
 ```json
 {
-  "collection": "srn:coeus:wcasg:widget:dashboard::collection",
-  "db": "wcasg",
+  "collection": "srn:coeus:acme:widget:dashboard::collection",
+  "db": "acme",
   "pipeline": [
     {
       "$match": {
-        "site.subscription.user.email": "gabe@solarixdigital.com"
+        "site.subscription.user.email": "gabe@gabewyatt.com"
       }
     },
     {
@@ -984,12 +984,12 @@ const schema = {
 
 ```json
 {
-  "collection": "srn:coeus:wcasg:widget:dashboard::collection",
-  "db": "wcasg",
+  "collection": "srn:coeus:acme:widget:dashboard::collection",
+  "db": "acme",
   "pipeline": [
     {
       "$match": {
-        "site.subscription.user.email": "gabe@solarixdigital.com"
+        "site.subscription.user.email": "gabe@gabewyatt.com"
       }
     },
     {

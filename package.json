@@ -58,6 +58,7 @@
     "build": "tsc && yarn run lint",
     "commit": "git-cz",
     "docker:mongo": "docker run -p 27017:27017 --name mongo mongo",
+    "docker:mongo:express": "docker-compose -f stack.yml up",
     "lint": "tsc --noEmit && eslint \"src/**/*.{js,ts}\" --quiet --fix",
     "prebuild": "rimraf dist",
     "start": "node dist/server.js",
@@ -94,6 +95,7 @@
     "outputDirectory": "dist"
   },
   "dependencies": {
+    "@sendgrid/mail": "^7.7.0",
     "@types/json5": "^0.0.30",
     "@types/lodash": "^4.14.161",
     "@types/nodemailer": "^6.4.0",

@@ -8,6 +8,7 @@ import {
 import { FastifyLoggerInstance } from 'fastify/types/logger';
 import Mail from 'nodemailer/lib/mailer';
 import { UserHashMap } from 'src/plugins/authentication';
+import SendgridMailer from '@sendgrid/mail';
 
 declare module 'fastify' {
   /**
@@ -25,6 +26,7 @@ declare module 'fastify' {
   > {
     mailer: Mail;
     testMailer: Mail;
+    sendgridMailer: SendgridMailer.MailService;
     mongo: { client: MongoClient };
     userHashMap: UserHashMap;
     updateUserHashMap: () => void;

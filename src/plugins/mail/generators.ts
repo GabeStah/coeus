@@ -29,16 +29,27 @@ export const sendEmail = async function ({
 }: {
   instance: FastifyInstance;
   request: FastifyRequest;
-  mailOptions: NodeMail.Options;
+  mailOptions: {
+    to: string;
+    from: string;
+    subject: string;
+    text: string;
+    html: string;
+  };
 }) {
   if (Utility.isTest(request)) {
-    const info: SentMessageInfo = await instance.testMailer.sendMail(
-      mailOptions
-    );
+    const info = await instance.testMailer.sendMail(mailOptions);
     request.log.info(`Email preview: ${nodemailer.getTestMessageUrl(info)}`);
   } /* istanbul ignore next */ else {
     /* istanbul ignore next */
-    await instance.mailer.sendMail(mailOptions);
+    switch (config.get('mail.transport')) {
+      case 'sendgrid':
+        await instance.sendgridMailer.send(mailOptions);
+        break;
+      case 'ses':
+        await instance.mailer.sendMail(mailOptions);
+        break;
+    }
   }
 };
 
@@ -58,8 +69,8 @@ export const sendOnActivationEmail = async function (
 
   if (user && user.email && user.active && user.verified) {
     const token = await this.jwt.sign(await user.toSignature());
-    const mailOptions: NodeMail.Options = {
-      from: `"${config.get('mail.from.name')}" <${config.get(
+    const mailOptions = {
+      from: `${config.get('mail.from.name')} <${config.get(
         'mail.from.address'
       )}>`,
       attachments: [getTokenAttachmentConfiguration({ user, token })],
@@ -102,8 +113,8 @@ export const sendTokenEmail = async function (
 
   if (user && user.email && user.active && user.verified) {
     const token = await this.jwt.sign(await user.toSignature());
-    const mailOptions: NodeMail.Options = {
-      from: `"${config.get('mail.from.name')}" <${config.get(
+    const mailOptions = {
+      from: `${config.get('mail.from.name')} <${config.get(
         'mail.from.address'
       )}>`,
       attachments: [getTokenAttachmentConfiguration({ user, token })],
@@ -142,7 +153,7 @@ export const sendOnVerificationEmail = async function (
   if (user && user.email && !user.verified) {
     const url = UserService.getVerificationUrl(user.verificationToken.value);
     const mailOptions = {
-      from: `"${config.get('mail.from.name')}" <${config.get(
+      from: `${config.get('mail.from.name')} <${config.get(
         'mail.from.address'
       )}>`,
       to: user.email,
